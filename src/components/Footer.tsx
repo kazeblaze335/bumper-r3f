@@ -3,9 +3,9 @@ export default function Footer() {
     <footer className="w-full bg-[#222222] text-white flex flex-col justify-between pt-20">
       {/* TOP SECTION: Logo & CTA */}
       <div className="flex flex-col md:flex-row justify-between items-start px-8 md:px-20 gap-10 md:gap-0">
-        <h2 className="text-3xl font-bold tracking-tight">B/D®</h2>
+        <h2 className="text-3xl font-bold tracking-tight"></h2>
         <div className="max-w-xl text-3xl md:text-4xl font-medium leading-tight">
-          <p>We collaborate with ambitious brands and people. Let's build.</p>
+          <p></p>
           <a
             href="mailto:biz@basicagency.com"
             className="underline decoration-1 underline-offset-8 hover:text-neutral-300 transition-colors"
