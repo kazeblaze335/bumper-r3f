@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import localFont from "next/font/local";
-import ProjectRevealCanvas from "./ProjectRevealCanvas";
+import { motion, AnimatePresence } from "framer-motion";
+import WavyRowCanvas from "./WavyRowCanvas";
 
-// Using your Circular Std setup
 const circular = localFont({
   src: "../../public/fonts/CircularStd-Medium.woff",
   variable: "--font-circular",
@@ -14,118 +14,220 @@ const circular = localFont({
 const PROJECTS = [
   {
     name: "Native Instruments",
+    services: "Visual Identity, Digital Flow",
+    location: "Berlin / 2023",
     src: "/images/project-1.jpg",
     slug: "native-instruments",
+    details:
+      "A complete overhaul of the digital ecosystem for the premier music production brand, focusing on immersive spatial audio interfaces and seamless e-commerce integration.",
+    role: "Lead Agency",
+    year: "2023",
   },
-  { name: "Oura", src: "/images/project-2.jpg", slug: "oura" },
+  {
+    name: "Oura",
+    services: "Creative Direction, Product",
+    location: "Oulu / 2023",
+    src: "/images/project-2.jpg",
+    slug: "oura",
+    details:
+      "Defining the visual language and interaction model for the next generation of wearable health technology, balancing clinical accuracy with premium lifestyle aesthetics.",
+    role: "Digital Partner",
+    year: "2023",
+  },
   {
     name: "Hender Scheme",
+    services: "Branding, Interior Design",
+    location: "Tokyo / 2023",
     src: "/images/project-3.jpg",
     slug: "hender-scheme",
+    details:
+      "Translating the artisanal leather craftsmanship of the iconic Tokyo brand into a digital environment, utilizing tactile micro-interactions and organic motion curves.",
+    role: "Creative Direction",
+    year: "2023",
   },
-  { name: "B&O Play", src: "/images/project-4.jpg", slug: "bo-play" },
-  { name: "Nothing", src: "/images/project-5.jpg", slug: "nothing" },
+  {
+    name: "B&O Play",
+    services: "Art Direction, Visuals",
+    location: "Struer / 2022",
+    src: "/images/project-4.jpg",
+    slug: "bo-play",
+    details:
+      "An experimental web experience showcasing the acoustic engineering behind the portable audio line, utilizing real-time WebGL audio visualizers.",
+    role: "Interactive Design",
+    year: "2022",
+  },
+  {
+    name: "Nothing",
+    services: "Spatial Depth, Experience",
+    location: "London / 2022",
+    src: "/images/project-5.jpg",
+    slug: "nothing",
+    details:
+      "A transparent, brutalist approach to product storytelling. We developed a custom rendering pipeline to showcase the internal components of the Ear (1) in real-time 3D.",
+    role: "Technical Partner",
+    year: "2022",
+  },
   {
     name: "Gentle Monster",
+    services: "Creative Concept, Experience",
+    location: "Seoul / 2022",
     src: "/images/project-6.jpg",
     slug: "gentle-monster",
+    details:
+      "An avant-garde digital showroom that mirrors the surreal physical retail spaces of the eyewear brand, bending the rules of standard e-commerce navigation.",
+    role: "Lead Agency",
+    year: "2022",
   },
-  {
-    name: "Officine Panerai",
-    src: "/images/project-7.jpg",
-    slug: "officine-panerai",
-  },
-  { name: "Polestar", src: "/images/project-8.jpg", slug: "polestar" },
-  {
-    name: "Fragment Design",
-    src: "/images/project-9.jpg",
-    slug: "fragment-design",
-  },
-  { name: "Superfuture", src: "/images/project-10.jpg", slug: "superfuture" },
-  {
-    name: "Bang & Olufsen",
-    src: "/images/project-11.jpg",
-    slug: "bang-olufsen",
-  },
-  { name: "Sonos", src: "/images/project-12.jpg", slug: "sonos" },
 ];
 
 export default function HeroProjects() {
   const router = useRouter();
-  const [activeProject, setActiveProject] = useState<
-    (typeof PROJECTS)[0] | null
-  >(null);
-  const [isExpanding, setIsExpanding] = useState(false);
+  const [openSlug, setOpenSlug] = useState<string | null>(null);
 
-  const handleProjectClick = (project: (typeof PROJECTS)[0]) => {
-    setIsExpanding(true);
-    setActiveProject(project);
+  const handleRowClick = (slug: string) => {
+    // Toggle accordion logic
+    setOpenSlug(openSlug === slug ? null : slug);
+  };
 
-    // Wait for the WebGL plane to scale up (800ms) before navigating
-    setTimeout(() => {
-      router.push(`/work/${project.slug}`);
-    }, 800);
+  const handleProjectRoute = (e: React.MouseEvent, slug: string) => {
+    e.stopPropagation();
+    router.push(`/work/${slug}`);
   };
 
   return (
     <div
-      className={`relative h-screen w-full flex flex-col p-8 bg-zinc-100 ${circular.className}`}
+      className={`relative w-full flex flex-col pt-32 pb-8 px-8 bg-zinc-100 ${circular.className}`}
     >
-      {/* 1. The WebGL Canvas sits behind the text */}
-      <ProjectRevealCanvas
-        activeImage={activeProject ? activeProject.src : null}
-        isExpanding={isExpanding}
-      />
-
-      {/* 3. The Main Interactive Inline Text Block */}
-      {/* Flex-1 takes up all middle space. 
-        Justify-center centers it. 
-        pb-24/md:pb-32 physically pushes the text up from the center! 
-      */}
-      <div className="relative z-10 flex-1 flex flex-col justify-center w-full max-w-[90%] md:max-w-[85%] mx-auto pointer-events-auto pb-24 md:pb-32">
-        {/* <div className="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-8">
-          Trusted Us
-        </div> */}
-
-        <h1 className="text-4xl md:text-6xl lg:text-[5.5rem] leading-[1.1] tracking-tight font-bold text-zinc-900 mix-blend-difference">
-          {PROJECTS.map((project, index) => {
-            const isHovered = activeProject?.name === project.name;
-            const isDimmed = activeProject && !isHovered;
-
-            return (
-              <span
-                key={project.name}
-                className="inline-block mr-[0.25em] mb-2"
-              >
-                <span
-                  onMouseEnter={() => !isExpanding && setActiveProject(project)}
-                  onMouseLeave={() => !isExpanding && setActiveProject(null)}
-                  onClick={() => handleProjectClick(project)}
-                  className={`
-                    cursor-pointer transition-all duration-500
-                    ${isHovered ? "border-b-4 border-zinc-900 text-zinc-900" : "border-b-4 border-transparent"}
-                    ${isDimmed ? "opacity-20" : "opacity-100"}
-                    ${isExpanding && isHovered ? "text-white border-white" : ""}
-                  `}
-                >
-                  {project.name}
-                </span>
-                <span
-                  className={`transition-opacity duration-500 ${isDimmed ? "opacity-20" : "opacity-100"}`}
-                >
-                  {index === PROJECTS.length - 1 ? "." : ","}
-                </span>
-              </span>
-            );
-          })}
-        </h1>
+      {/* 1. Global List Header */}
+      <div className="border-b border-zinc-200 pb-2 mb-2 flex justify-between items-end uppercase text-xs font-bold tracking-[0.2em] text-zinc-400">
+        <div className="w-[45%]">Project Name</div>
+        <div className="w-[30%]">Services</div>
+        <div className="w-[25%] text-right">Location</div>
       </div>
 
-      {/* 4. Bottom UI Layer (Flex-none keeps it locked to the bottom) */}
-      <div className="relative z-10 flex-none flex justify-between items-end uppercase text-xs font-bold tracking-widest text-zinc-900 pointer-events-none">
-        {/* <div>Experiment 503</div>
-        <div>Developed by Codegrid</div> */}
+      {/* 2. Main Interactive List */}
+      <div className="relative z-10 w-full pointer-events-auto">
+        {PROJECTS.map((project) => {
+          const isOpen = openSlug === project.slug;
+
+          return (
+            <ProjectRow
+              key={project.slug}
+              project={project}
+              isOpen={isOpen}
+              onToggle={() => handleRowClick(project.slug)}
+              onRoute={(e) => handleProjectRoute(e, project.slug)}
+            />
+          );
+        })}
       </div>
+    </div>
+  );
+}
+
+// 3. The Re-architected Row Component
+function ProjectRow({
+  project,
+  isOpen,
+  onToggle,
+  onRoute,
+}: {
+  project: (typeof PROJECTS)[0];
+  isOpen: boolean;
+  onToggle: () => void;
+  onRoute: (e: React.MouseEvent) => void;
+}) {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <div
+      className="relative w-full cursor-pointer group border-b border-zinc-200"
+      onClick={onToggle}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {/* DOM Row Header (Always Visible) */}
+      <div className="relative z-10 flex justify-between items-center py-6">
+        {/* Project Title */}
+        <div className="w-[45%]">
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-zinc-900 group-hover:text-zinc-500 transition-colors duration-300">
+            {project.name}
+          </h1>
+        </div>
+
+        {/* Services */}
+        <div className="w-[30%] uppercase text-xs font-bold tracking-[0.2em] text-zinc-500 group-hover:text-zinc-400 transition-colors duration-300">
+          {project.services}
+        </div>
+
+        {/* Location */}
+        <div className="w-[25%] text-right uppercase text-xs font-bold tracking-[0.2em] text-zinc-500 group-hover:text-zinc-400 transition-colors duration-300">
+          {project.location}
+        </div>
+      </div>
+
+      {/* 4. The Accordion Reveal (Matches Screenshot Layout) */}
+      <AnimatePresence initial={false}>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.5, ease: [0.25, 1, 0.5, 1] }} // Smooth spring-like reveal
+            className="overflow-hidden"
+          >
+            {/* Split layout inside the accordion */}
+            <div className="pb-12 pt-4 flex gap-8 h-[400px]">
+              {/* Left Column: The WebGL Image Canvas (Now contained!) */}
+              <div className="relative w-[45%] h-full rounded-lg overflow-hidden bg-zinc-200">
+                {/* The canvas sits cleanly inside this specific div now */}
+                <WavyRowCanvas
+                  activeImage={project.src}
+                  isHovered={isHovered || isOpen}
+                  isExpanding={false} // We removed the full-screen expansion for this layout
+                />
+              </div>
+
+              {/* Right Column: Project Metadata & Description */}
+              <div className="w-[55%] flex flex-col justify-between h-full pl-8 border-l border-zinc-200">
+                {/* Top Metadata Grid */}
+                <div className="flex gap-16">
+                  <div>
+                    <div className="text-xs font-bold tracking-[0.2em] uppercase text-zinc-400 mb-2">
+                      Role
+                    </div>
+                    <div className="text-sm font-medium text-zinc-900">
+                      {project.role}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold tracking-[0.2em] uppercase text-zinc-400 mb-2">
+                      Year
+                    </div>
+                    <div className="text-sm font-medium text-zinc-900">
+                      {project.year}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bottom Description & Button */}
+                <div>
+                  <p className="text-xl md:text-2xl leading-relaxed text-zinc-900 font-medium max-w-xl mb-8">
+                    {project.details}
+                  </p>
+
+                  <button
+                    onClick={onRoute}
+                    className="inline-block border-b border-zinc-900 pb-1 text-xs font-bold tracking-[0.2em] uppercase text-zinc-900 hover:opacity-50 transition-opacity"
+                  >
+                    View Case Study
+                  </button>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
