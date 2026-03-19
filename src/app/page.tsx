@@ -73,23 +73,19 @@ export default function Home() {
           className="relative z-10 bg-zinc-100 shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
           style={{ marginBottom: `${footerHeight}px` }}
         >
-          {/* 1. Intro Typography */}
           <div className="h-[40vh] flex flex-col items-center justify-center pt-32 text-zinc-900 px-8 text-center bg-zinc-100">
             <p className="text-xs font-bold tracking-[0.2em] uppercase text-zinc-400">
               The Archive
             </p>
           </div>
 
-          {/* 2. Seamless Spatial Depth (FIXED SYNC) */}
+          {/* 1. First Oversize NB International Text */}
           <div className="h-[60vh] flex items-center justify-center text-zinc-900 px-8 text-center bg-zinc-100">
-            {/* We wait for isLoading to be false. 
-                Then we add a 0.6s delay so the preloader has time to slide up and reveal the animation happening! */}
             {!isLoading && (
-              <SplitText text="Seamless spatial depth." delay={0.6} />
+              <SplitText text="SEAMLESS SPATIAL DEPTH." delay={0.6} />
             )}
           </div>
 
-          {/* 3. First Parallax: Full Screen background with EXTREME DEPTH */}
           <ParallaxImage
             src="/images/parallax-1.jpg"
             alt="Full screen background"
@@ -97,10 +93,8 @@ export default function Home() {
             lgParallax={true}
           />
 
-          {/* 4. Interactive WebGL Accordion Section */}
           <HeroProjects />
 
-          {/* 5. Second Parallax Window (Standard Depth) */}
           <div className="py-20 flex justify-center bg-zinc-200">
             <ParallaxImage
               src="/images/parallax-2.jpg"
@@ -109,16 +103,15 @@ export default function Home() {
             />
           </div>
 
-          {/* 6. Final Section before Footer */}
+          {/* 2. Second Oversize NB International Text */}
           <div className="h-[60vh] flex flex-col items-center justify-center text-zinc-900 px-8 text-center bg-zinc-100">
-            <SplitText text="Keep Scrolling" />
+            <SplitText text="KEEP SCROLLING" />
             <p className="mt-8 text-xl font-medium tracking-widest uppercase text-zinc-500">
               The sticky footer awaits.
             </p>
           </div>
         </div>
 
-        {/* STICKY FOOTER WRAPPER */}
         <div ref={footerRef} className="fixed bottom-0 left-0 w-full z-0">
           <Footer />
         </div>
