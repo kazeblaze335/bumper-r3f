@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { motion, useSpring } from "framer-motion";
+import { useState, useRef, useEffect } from "react";
+import { motion, useSpring, useMotionValue } from "framer-motion";
 import Link from "next/link";
-import Image from "next/image";
 import { useTransitionRouter } from "next-view-transitions";
 
 const FEATURED = [
@@ -131,10 +130,48 @@ export default function FeaturedWorks() {
   const [isHoveringMenu, setIsHoveringMenu] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const floatingImageRef = useRef<HTMLDivElement>(null);
   const router = useTransitionRouter();
 
-  const cursorX = useSpring(0, { damping: 20, stiffness: 100, mass: 0.5 });
-  const cursorY = useSpring(0, { damping: 20, stiffness: 100, mass: 0.5 });
+  // 1. Core target values (Raw JS numbers, skipping React State)
+  const targetX = useMotionValue(0);
+  const targetY = useMotionValue(0);
+
+  // 2. Heavy Springs doing the physics calculations
+  const cursorX = useSpring(targetX, {
+    damping: 20,
+    stiffness: 100,
+    mass: 0.5,
+  });
+  const cursorY = useSpring(targetY, {
+    damping: 20,
+    stiffness: 100,
+    mass: 0.5,
+  });
+
+  // 3. The Direct DOM Mutation Subscription
+  // This completely bypasses React's render phase!
+  useEffect(() => {
+    // Unsubscribe from X
+    const unsubX = cursorX.on("change", (latestX) => {
+      if (floatingImageRef.current) {
+        // Using translate3d offloads this specific math to the GPU
+        floatingImageRef.current.style.transform = `translate3d(${latestX}px, ${cursorY.get()}px, 0)`;
+      }
+    });
+
+    // Unsubscribe from Y
+    const unsubY = cursorY.on("change", (latestY) => {
+      if (floatingImageRef.current) {
+        floatingImageRef.current.style.transform = `translate3d(${cursorX.get()}px, ${latestY}px, 0)`;
+      }
+    });
+
+    return () => {
+      unsubX();
+      unsubY();
+    };
+  }, [cursorX, cursorY]);
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!containerRef.current || window.innerWidth < 768) return;
@@ -142,10 +179,9 @@ export default function FeaturedWorks() {
     const mouseX = e.clientX - rect.left;
 
     const isLeftHalf = mouseX < rect.width / 2;
-    const targetX = isLeftHalf ? rect.width * 0.1 : rect.width * 0.9 - 225;
-
-    cursorX.set(targetX);
-    cursorY.set(e.clientY - rect.top - 137);
+    // Set the motion values directly, triggering the springs
+    targetX.set(isLeftHalf ? rect.width * 0.1 : rect.width * 0.9 - 225);
+    targetY.set(e.clientY - rect.top - 137);
   };
 
   const handleMouseEnterRow = (index: number) => {
@@ -183,13 +219,16 @@ export default function FeaturedWorks() {
             onClick={handleNavigation(`/work/${project.slug}`)}
             className="w-full block cursor-pointer group/item transition-colors duration-500 relative z-10 hover:z-20"
           >
+            {/* MOBILE LAYOUT */}
             <div className="flex md:hidden flex-col w-full gap-4 py-8 border-b border-zinc-200 dark:border-zinc-800">
+              {/* Added loading="lazy" and decoding="async" to mobile fallback images */}
               <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-zinc-200 dark:bg-zinc-800">
-                <Image
+                <img
                   src={project.src}
                   alt={project.name}
-                  fill
-                  className="object-cover transition-transform duration-700 hover:scale-105"
+                  loading="lazy"
+                  decoding="async"
+                  className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
                 />
               </div>
               <div className="flex justify-between items-end">
@@ -207,6 +246,7 @@ export default function FeaturedWorks() {
               </div>
             </div>
 
+            {/* DESKTOP LAYOUT */}
             <motion.div
               initial="initial"
               whileHover="hover"
@@ -236,9 +276,15 @@ export default function FeaturedWorks() {
         ))}
       </div>
 
-      <motion.div
-        className="hidden md:block pointer-events-none absolute top-0 left-0 z-0"
-        style={{ x: cursorX, y: cursorY }}
+      {/* =======================================================
+        THE DIRECT DOM REF CONTAINER
+        Removed motion.div, replaced with standard div and a ref.
+        Because we use translate3d in the hook above, the GPU handles it.
+        ======================================================= 
+      */}
+      <div
+        ref={floatingImageRef}
+        className="hidden md:block pointer-events-none absolute top-0 left-0 z-0 will-change-transform"
       >
         <div className="relative w-[225px] h-[275px]">
           <div className="absolute inset-0">
@@ -263,13 +309,11 @@ export default function FeaturedWorks() {
                   initial="hiddenBottom"
                   animate={variant}
                   transition={{ duration: 0.6, ease: [0.33, 1, 0.68, 1] }}
-                  // Add willChange to perfectly accelerate the clip-path!
                   style={{
                     zIndex: isActive ? 20 : isPrev ? 10 : 1,
                     willChange: "clip-path",
                   }}
                 >
-                  {/* Added decoding="async" to prevent main-thread stutter! */}
                   <img
                     src={proj.src}
                     alt={proj.name}
@@ -307,7 +351,6 @@ export default function FeaturedWorks() {
                     ease: [0.33, 1, 0.68, 1],
                     delay: 0.05,
                   }}
-                  // Add willChange here too!
                   style={{
                     zIndex: isActive ? 20 : isPrev ? 10 : 1,
                     willChange: "clip-path",
@@ -324,7 +367,7 @@ export default function FeaturedWorks() {
             })}
           </div>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }

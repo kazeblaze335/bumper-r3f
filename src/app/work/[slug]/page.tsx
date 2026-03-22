@@ -1,170 +1,188 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { useParams } from "next/navigation";
-import { motion, useTransform, useMotionValue } from "framer-motion";
-import localFont from "next/font/local";
-import Lenis from "@studio-freight/lenis";
-import Navbar from "@/components/NavBar";
-import FilmGrain from "@/components/FilmGrain";
-import SplitText from "@/components/SplitText";
+import { useEffect, use } from "react";
+import Link from "next/link";
 import Image from "next/image";
+import Lenis from "@studio-freight/lenis";
+import { useTransitionRouter } from "next-view-transitions";
+import HardwareParallax from "@/components/HardwareParallax";
+import SplitText from "@/components/SplitText";
+import FilmGrain from "@/components/FilmGrain";
 
-const neueMontreal = localFont({
-  src: "../../../../public/fonts/PPNeueMontreal-Bold.otf",
-  variable: "--font-neue",
-});
-
-const projectData: Record<string, any> = {
-  default: {
-    title: "Project Archive",
-    client: "Internal Research",
-    role: "Creative Direction & WebGL",
-    stack: "Next.js, React Three Fiber, GSAP",
-    description:
-      "This project explores the intersection of digital environments and human behavior. By applying ethnographic principles to user interface design, we engineered a spatial web experience that feels brutally modern yet deeply intuitive. The typography acts as a structural artifact, guiding the user through an endless vertical space.",
-    images: [
-      "/images/parallax-1.jpg",
-      "/images/parallax-2.jpg",
-      "/images/project-12.jpg",
-      "/images/project-1.jpg",
-      "/images/project-2.jpg",
+const pageAnimation = () => {
+  document.documentElement.animate(
+    [
+      { scale: 1, transform: "translateY(0%)", rotate: "0deg", opacity: 1 },
+      {
+        scale: 1.2,
+        transform: "translateY(-10%)",
+        rotate: "-5deg",
+        opacity: 0,
+      },
     ],
-  },
+    {
+      duration: 800,
+      easing: "cubic-bezier(0.9, 0, 0.1, 1)",
+      fill: "forwards",
+      pseudoElement: "::view-transition-old(root)",
+    },
+  );
+
+  document.documentElement.animate(
+    [{ transform: "translateY(100%)" }, { transform: "translateY(0%)" }],
+    {
+      duration: 800,
+      easing: "cubic-bezier(0.9, 0, 0.1, 1)",
+      fill: "forwards",
+      pseudoElement: "::view-transition-new(root)",
+    },
+  );
 };
 
-export default function ProjectPage() {
-  const params = useParams();
-  const slug = typeof params.slug === "string" ? params.slug : "default";
+export default function CaseStudyPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = use(params);
+  const router = useTransitionRouter();
 
-  const formattedTitle = slug.replace(/-/g, " ").toUpperCase();
-  const data = projectData[slug] || {
-    ...projectData["default"],
-    title: formattedTitle,
+  const handleBackNavigation = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    router.push("/", {
+      onTransitionReady: pageAnimation,
+    });
   };
 
-  const lenisRef = useRef<Lenis | null>(null);
-
-  const scrollY = useMotionValue(0);
-
-  const col1Y = useTransform(scrollY, [0, 3000], [0, -2000]);
-  const col2Y = useTransform(scrollY, [0, 3000], [0, -800]);
-  const interiorY = useTransform(scrollY, [0, 3000], [-250, 250]);
-
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      window.history.scrollRestoration = "manual";
-    }
     window.scrollTo(0, 0);
 
     const lenis = new Lenis({
-      duration: 1.2,
+      lerp: 0.08,
+      smoothWheel: true,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
     });
-    lenisRef.current = lenis;
 
-    lenis.on("scroll", (e: any) => {
-      scrollY.set(e.scroll);
-    });
-
+    let rafId: number;
     function raf(time: number) {
       lenis.raf(time);
-      requestAnimationFrame(raf);
+      rafId = requestAnimationFrame(raf);
     }
-    requestAnimationFrame(raf);
+    rafId = requestAnimationFrame(raf);
 
-    return () => lenis.destroy();
-  }, [scrollY]);
+    return () => {
+      lenis.destroy();
+      cancelAnimationFrame(rafId);
+    };
+  }, []);
 
   return (
     <>
       <FilmGrain />
-      <main className="relative bg-zinc-100 dark:bg-zinc-950 min-h-screen text-zinc-900 dark:text-zinc-100 overflow-clip transition-colors duration-500">
-        <Navbar />
+      <main className="relative bg-zinc-100 dark:bg-zinc-950 min-h-screen text-zinc-900 dark:text-zinc-100 pb-32 transition-colors duration-500">
+        <div className="fixed top-0 left-0 w-full p-8 z-50 flex justify-between items-center mix-blend-difference text-zinc-100">
+          <Link
+            href="/"
+            onClick={handleBackNavigation}
+            className="text-sm font-bold tracking-[0.2em] uppercase hover:opacity-50 transition-opacity"
+          >
+            Back to Archive
+          </Link>
+          <div className="text-sm font-bold tracking-[0.2em] uppercase">
+            2023
+          </div>
+        </div>
 
-        <div className="relative z-10 bg-zinc-100 dark:bg-zinc-950 pt-40 px-8 md:px-16 pb-20 transition-colors duration-500">
-          {/* TIGHTENED ENTRY DELAY */}
-          <SplitText
-            text={data.title}
-            delay={0.4}
-            className={`!text-[12vw] md:!text-[9vw] leading-[0.85] tracking-tight uppercase ${neueMontreal.className}`}
-          />
+        <div className="pt-40 px-8 md:px-16 mb-24">
+          <h1 className="text-xs md:text-sm font-bold tracking-[0.4em] uppercase text-zinc-500 mb-8">
+            Case Study
+          </h1>
+          <div className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tighter uppercase leading-[0.85] mb-12 max-w-5xl">
+            <SplitText text={slug.replace("-", " ")} delay={0.2} />
+          </div>
 
-          <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-10 border-t border-zinc-300 dark:border-zinc-800 pt-10 transition-colors duration-500">
-            <div className="space-y-2">
-              <p className="text-xs font-bold tracking-[0.2em] uppercase text-zinc-400 dark:text-zinc-500">
-                Client
-              </p>
-              <p className="text-lg font-medium">{data.client}</p>
-            </div>
-            <div className="space-y-2">
-              <p className="text-xs font-bold tracking-[0.2em] uppercase text-zinc-400 dark:text-zinc-500">
-                Role & Stack
-              </p>
-              <p className="text-lg font-medium">{data.role}</p>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                {data.stack}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 border-t border-zinc-200 dark:border-zinc-800 pt-8">
+            <div className="col-span-1 md:col-span-2">
+              <p className="text-xl md:text-2xl leading-relaxed font-medium text-zinc-700 dark:text-zinc-300 max-w-3xl">
+                This is a placeholder for the lush, editorial description of the
+                project. We developed a comprehensive design system and spatial
+                interface that pushed the boundaries of modern web standards.
               </p>
             </div>
-            <div className="space-y-2 md:pl-10">
-              <p className="text-xs font-bold tracking-[0.2em] uppercase text-zinc-400 dark:text-zinc-500">
-                The Brief
-              </p>
-              <p className="text-md leading-relaxed font-medium">
-                {data.description}
-              </p>
+            <div className="flex flex-col gap-6">
+              <div>
+                <p className="text-xs font-bold tracking-[0.2em] uppercase text-zinc-500 mb-2">
+                  Role
+                </p>
+                <p className="font-medium">Creative Direction</p>
+              </div>
+              <div>
+                <p className="text-xs font-bold tracking-[0.2em] uppercase text-zinc-500 mb-2">
+                  Client
+                </p>
+                <p className="font-medium capitalize">
+                  {slug.replace("-", " ")}
+                </p>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="relative w-full bg-zinc-200 dark:bg-zinc-900 flex justify-center gap-4 md:gap-10 py-32 md:py-64 border-t border-zinc-300 dark:border-zinc-800 transition-colors duration-500">
-          <motion.div
-            style={{ y: col1Y }}
-            className="flex flex-col gap-10 w-[90%] md:w-[40%]"
+        <div className="flex flex-col gap-8 md:gap-32 px-4 md:px-16">
+          <HardwareParallax
+            speed={0.15}
+            className="w-full aspect-[4/3] md:aspect-video rounded-lg"
           >
-            {data.images.map((src: string, index: number) => (
-              <div
-                key={`col1-${index}`}
-                className="relative w-full h-[50vh] md:h-[80vh] shrink-0 overflow-hidden rounded-xl shadow-lg bg-zinc-300 dark:bg-zinc-800"
-              >
-                <motion.div
-                  style={{ y: interiorY }}
-                  className="absolute inset-0 w-full h-full scale-[1.2]"
-                >
-                  <Image
-                    src={src}
-                    alt={`Project visual A ${index}`}
-                    fill
-                    className="object-cover"
-                  />
-                </motion.div>
-              </div>
-            ))}
-          </motion.div>
+            <Image
+              src="/images/project-1.jpg"
+              alt="Gallery 1"
+              fill
+              className="object-cover"
+              decoding="async"
+              priority
+            />
+          </HardwareParallax>
 
-          <motion.div
-            style={{ y: col2Y }}
-            className="hidden md:flex flex-col gap-10 w-[40%]"
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16">
+            <HardwareParallax
+              speed={0.25}
+              className="w-full aspect-square rounded-lg"
+            >
+              <Image
+                src="/images/project-2.jpg"
+                alt="Gallery 2"
+                fill
+                className="object-cover"
+                decoding="async"
+              />
+            </HardwareParallax>
+
+            <HardwareParallax
+              speed={0.1}
+              className="w-full aspect-square rounded-lg md:mt-32"
+            >
+              <Image
+                src="/images/project-3.jpg"
+                alt="Gallery 3"
+                fill
+                className="object-cover"
+                decoding="async"
+              />
+            </HardwareParallax>
+          </div>
+
+          <HardwareParallax
+            speed={0.2}
+            className="w-full aspect-[4/3] md:aspect-video rounded-lg"
           >
-            {[...data.images].reverse().map((src: string, index: number) => (
-              <div
-                key={`col2-${index}`}
-                className="relative w-full h-[60vh] md:h-[90vh] shrink-0 overflow-hidden rounded-xl shadow-lg bg-zinc-300 dark:bg-zinc-800"
-              >
-                <motion.div
-                  style={{ y: interiorY }}
-                  className="absolute inset-0 w-full h-full scale-[1.2]"
-                >
-                  <Image
-                    src={src}
-                    alt={`Project visual reverse B ${index}`}
-                    fill
-                    className="object-cover"
-                  />
-                </motion.div>
-              </div>
-            ))}
-          </motion.div>
+            <Image
+              src="/images/project-4.jpg"
+              alt="Gallery 4"
+              fill
+              className="object-cover"
+              decoding="async"
+            />
+          </HardwareParallax>
         </div>
       </main>
     </>
