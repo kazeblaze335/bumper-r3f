@@ -93,20 +93,23 @@ export default function WorkGallery() {
   return (
     <>
       <FilmGrain />
-      {/* ADDED: dark:bg-zinc-950 and dark:text-zinc-100 */}
       <main className="relative bg-zinc-100 dark:bg-zinc-950 min-h-screen text-zinc-900 dark:text-zinc-100 overflow-clip transition-colors duration-500">
         <Navbar />
 
-        {/* ADDED: dark:bg-zinc-950 */}
         <div
           className="relative z-10 bg-zinc-100 dark:bg-zinc-950 shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-colors duration-500"
           style={{ marginBottom: `${footerHeight}px` }}
         >
           {/* Header */}
           <div className="pt-40 px-8 md:px-16 pb-20">
+            {/* =======================================================
+                THE DELAY FIX
+                Increased delay from 0.1 to 0.8 so it waits for the 
+                1.2s page transition to almost finish!
+                ======================================================= */}
             <SplitText
               text="SELECTED WORKS."
-              delay={0.1}
+              delay={0.8}
               className={`!text-[12vw] md:!text-[9vw] leading-[0.85] tracking-tight uppercase ${neueMontreal.className}`}
             />
           </div>
@@ -123,11 +126,14 @@ export default function WorkGallery() {
                     initial={{ opacity: 0, y: 50 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: "-100px" }}
-                    transition={{ duration: 0.8, ease: [0.33, 1, 0.68, 1] }}
+                    transition={{
+                      duration: 0.8,
+                      ease: [0.33, 1, 0.68, 1],
+                      delay: 0.2,
+                    }} // Added a slight initial delay here too
                     className={`flex flex-col group ${isEven ? "md:mt-32" : ""}`}
                   >
                     <Link href={`/work/${project.slug}`} className="w-full">
-                      {/* ADDED: dark:bg-zinc-900 to the image placeholder */}
                       <div className="relative w-full aspect-[4/5] overflow-hidden rounded-xl bg-zinc-200 dark:bg-zinc-900 transition-colors duration-500">
                         <Image
                           src={project.src}
@@ -138,16 +144,13 @@ export default function WorkGallery() {
                       </div>
                       <div className="mt-6 flex justify-between items-start">
                         <div>
-                          {/* ADDED: dark:text-zinc-100 */}
                           <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 transition-colors group-hover:text-zinc-500 dark:group-hover:text-zinc-400 duration-300">
                             {project.name}
                           </h2>
-                          {/* ADDED: dark:text-zinc-400 */}
                           <p className="mt-2 text-sm font-medium text-zinc-500 dark:text-zinc-400 transition-colors duration-500">
                             {project.role}
                           </p>
                         </div>
-                        {/* ADDED: dark:text-zinc-500 */}
                         <p className="text-xs font-bold tracking-[0.2em] uppercase text-zinc-400 dark:text-zinc-500 transition-colors duration-500 text-right">
                           {project.location}
                         </p>

@@ -58,7 +58,6 @@ export default function AboutPage() {
   return (
     <>
       <FilmGrain />
-      {/* Added dark mode background and text colors to the main wrapper */}
       <main
         ref={containerRef}
         className="relative bg-zinc-100 dark:bg-zinc-950 min-h-screen text-zinc-900 dark:text-zinc-100 overflow-clip transition-colors duration-500"
@@ -70,7 +69,6 @@ export default function AboutPage() {
           style={{ marginBottom: `${footerHeight}px` }}
         >
           {/* THE SOJU SIZZLE HEADER */}
-          {/* Added dark:bg-zinc-900 and dark:text-zinc-100 */}
           <div className="h-screen w-full sticky top-0 flex flex-col items-center justify-center overflow-hidden bg-zinc-200 dark:bg-zinc-900 transition-colors duration-500">
             <motion.div
               style={{ scale: sojuScale, opacity: sojuOpacity, y: sojuY }}
@@ -87,16 +85,14 @@ export default function AboutPage() {
             </motion.p>
           </div>
 
-          {/* THE MASKING BIO CONTENT LAYER */}
           <div className="relative z-10 bg-zinc-100 dark:bg-zinc-950 pt-32 md:pt-48 px-8 md:px-16 pb-40 transition-colors duration-500">
+            {/* DELAY SYNCED WITH VIEW TRANSITION */}
             <SplitText
               text="SYSTEMS & SPATIAL DESIGN."
-              delay={0.1}
+              delay={0.8}
               className={`!text-[8vw] md:!text-[6vw] leading-[0.85] tracking-tight uppercase max-w-5xl ${neueMontreal.className}`}
             />
 
-            {/* Editorial Grid for Bio */}
-            {/* Added dark:border-zinc-800 */}
             <div className="mt-20 md:mt-32 grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-20 border-t border-zinc-300 dark:border-zinc-800 pt-16 transition-colors duration-500">
               <div className="md:col-span-4 space-y-12">
                 <div>
@@ -155,7 +151,6 @@ export default function AboutPage() {
           </div>
         </div>
 
-        {/* STICKY FOOTER WRAPPER */}
         <div ref={footerRef} className="fixed bottom-0 left-0 w-full z-0">
           <Footer />
         </div>

@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useTransitionRouter } from "next-view-transitions";
 import localFont from "next/font/local";
 import { motion, AnimatePresence } from "framer-motion";
 import WavyRowCanvas from "./WavyRowCanvas";
@@ -80,6 +82,39 @@ const PROJECTS = [
   },
 ];
 
+// =======================================================
+// THE WAAPI PAGE ANIMATION
+// =======================================================
+const pageAnimation = () => {
+  document.documentElement.animate(
+    [
+      { scale: 1, transform: "translateY(0%)", rotate: "0deg", opacity: 1 },
+      {
+        scale: 1.2,
+        transform: "translateY(-10%)",
+        rotate: "-5deg",
+        opacity: 0,
+      },
+    ],
+    {
+      duration: 1200,
+      easing: "cubic-bezier(0.9, 0, 0.1, 1)",
+      fill: "forwards",
+      pseudoElement: "::view-transition-old(root)",
+    },
+  );
+
+  document.documentElement.animate(
+    [{ transform: "translateY(100%)" }, { transform: "translateY(0%)" }],
+    {
+      duration: 1200,
+      easing: "cubic-bezier(0.9, 0, 0.1, 1)",
+      fill: "forwards",
+      pseudoElement: "::view-transition-new(root)",
+    },
+  );
+};
+
 export default function HeroProjects() {
   const [openSlug, setOpenSlug] = useState<string | null>(null);
 
@@ -88,19 +123,15 @@ export default function HeroProjects() {
   };
 
   return (
-    // ADDED: dark:bg-zinc-950
     <div
       className={`relative w-full flex flex-col pt-32 pb-8 px-8 bg-zinc-100 dark:bg-zinc-950 transition-colors duration-500 ${circular.className}`}
     >
-      {/* Global List Header */}
-      {/* ADDED: dark:border-zinc-800 dark:text-zinc-500 */}
       <div className="border-b border-zinc-200 dark:border-zinc-800 pb-2 mb-2 flex justify-between items-end uppercase text-xs font-bold tracking-[0.2em] text-zinc-400 dark:text-zinc-500 transition-colors duration-500">
         <div className="w-[45%]">Project Name</div>
         <div className="w-[30%]">Services</div>
         <div className="w-[25%] text-right">Location</div>
       </div>
 
-      {/* Main Interactive List */}
       <div className="relative z-10 w-full pointer-events-auto">
         {PROJECTS.map((project) => {
           const isOpen = openSlug === project.slug;
@@ -130,30 +161,41 @@ function ProjectRow({
 }) {
   const [isHovered, setIsHovered] = useState(false);
 
+  // Initialize the transition router and pathname for the links
+  const router = useTransitionRouter();
+  const pathname = usePathname();
+
+  // Custom navigation handler for the case study links
+  const handleNavigation =
+    (path: string) => (e: React.MouseEvent<HTMLAnchorElement>) => {
+      e.preventDefault();
+      e.stopPropagation(); // Crucial: prevents the accordion from toggling closed!
+
+      if (pathname === path) return;
+
+      router.push(path, {
+        onTransitionReady: pageAnimation,
+      });
+    };
+
   return (
     <div
-      // ADDED: dark:border-zinc-800
       className="relative w-full cursor-pointer group border-b border-zinc-200 dark:border-zinc-800 transition-colors duration-500"
       onClick={onToggle}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className="relative z-10 flex justify-between items-center py-6">
-        {/* Project Title */}
         <div className="w-[45%]">
-          {/* ADDED: dark:text-zinc-100 and dark:group-hover:text-zinc-400 */}
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 group-hover:text-zinc-500 dark:group-hover:text-zinc-400 transition-colors duration-300">
             {project.name}
           </h1>
         </div>
 
-        {/* Services */}
-        {/* ADDED: dark:text-zinc-500 dark:group-hover:text-zinc-400 */}
         <div className="w-[30%] uppercase text-xs font-bold tracking-[0.2em] text-zinc-500 dark:text-zinc-500 group-hover:text-zinc-400 dark:group-hover:text-zinc-400 transition-colors duration-300">
           {project.services}
         </div>
 
-        {/* Location */}
         <div className="w-[25%] text-right uppercase text-xs font-bold tracking-[0.2em] text-zinc-500 dark:text-zinc-500 group-hover:text-zinc-400 dark:group-hover:text-zinc-400 transition-colors duration-300">
           {project.location}
         </div>
@@ -169,8 +211,6 @@ function ProjectRow({
             className="overflow-hidden"
           >
             <div className="pb-12 pt-4 flex gap-8 h-[400px]">
-              {/* Left Column Canvas Wrapper */}
-              {/* ADDED: dark:bg-zinc-900 */}
               <div className="relative w-[45%] h-full rounded-lg overflow-hidden bg-zinc-200 dark:bg-zinc-900 transition-colors duration-500">
                 <WavyRowCanvas
                   activeImage={project.src}
@@ -179,15 +219,12 @@ function ProjectRow({
                 />
               </div>
 
-              {/* Right Column Metadata */}
-              {/* ADDED: dark:border-zinc-800 */}
               <div className="w-[55%] flex flex-col justify-between h-full pl-8 border-l border-zinc-200 dark:border-zinc-800 transition-colors duration-500">
                 <div className="flex gap-16">
                   <div>
                     <div className="text-xs font-bold tracking-[0.2em] uppercase text-zinc-400 dark:text-zinc-500 mb-2 transition-colors duration-500">
                       Role
                     </div>
-                    {/* ADDED: dark:text-zinc-100 */}
                     <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100 transition-colors duration-500">
                       {project.role}
                     </div>
@@ -203,16 +240,17 @@ function ProjectRow({
                 </div>
 
                 <div>
-                  {/* ADDED: dark:text-zinc-300 */}
                   <p className="text-xl md:text-2xl leading-relaxed text-zinc-900 dark:text-zinc-300 font-medium max-w-xl mb-8 transition-colors duration-500">
                     {project.details}
                   </p>
 
-                  {/* ADDED: dark:text-zinc-100 dark:border-zinc-100 */}
+                  {/* =======================================================
+                      THE UPDATED LINK WITH TRANSITION
+                      ======================================================= */}
                   <Link
                     href={`/work/${project.slug}`}
                     className="inline-block border-b border-zinc-900 dark:border-zinc-100 pb-1 text-xs font-bold tracking-[0.2em] uppercase text-zinc-900 dark:text-zinc-100 hover:opacity-50 transition-opacity"
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={handleNavigation(`/work/${project.slug}`)}
                   >
                     View Case Study
                   </Link>

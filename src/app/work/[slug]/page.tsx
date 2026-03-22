@@ -79,19 +79,17 @@ export default function ProjectPage() {
   return (
     <>
       <FilmGrain />
-      {/* ADDED: dark:bg-zinc-950 dark:text-zinc-100 */}
       <main className="relative bg-zinc-100 dark:bg-zinc-950 min-h-screen text-zinc-900 dark:text-zinc-100 overflow-clip transition-colors duration-500">
         <Navbar />
 
-        {/* ADDED: dark:bg-zinc-950 to the Masking Wall */}
         <div className="relative z-10 bg-zinc-100 dark:bg-zinc-950 pt-40 px-8 md:px-16 pb-20 transition-colors duration-500">
+          {/* DELAY SYNCED WITH VIEW TRANSITION */}
           <SplitText
             text={data.title}
-            delay={0.2}
+            delay={0.8}
             className={`!text-[12vw] md:!text-[9vw] leading-[0.85] tracking-tight uppercase ${neueMontreal.className}`}
           />
 
-          {/* ADDED: dark:border-zinc-800 */}
           <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-10 border-t border-zinc-300 dark:border-zinc-800 pt-10 transition-colors duration-500">
             <div className="space-y-2">
               <p className="text-xs font-bold tracking-[0.2em] uppercase text-zinc-400 dark:text-zinc-500">
@@ -119,7 +117,6 @@ export default function ProjectPage() {
           </div>
         </div>
 
-        {/* ADDED: dark:bg-zinc-900 and dark:border-zinc-800 to the Gallery */}
         <div className="relative w-full bg-zinc-200 dark:bg-zinc-900 flex justify-center gap-4 md:gap-10 py-32 md:py-64 border-t border-zinc-300 dark:border-zinc-800 transition-colors duration-500">
           <motion.div
             style={{ y: col1Y }}

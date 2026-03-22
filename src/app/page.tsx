@@ -40,7 +40,6 @@ export default function Home() {
   return (
     <>
       <FilmGrain />
-      {/* ADDED: dark:bg-zinc-950 and dark:text-zinc-100 */}
       <main className="relative bg-zinc-100 dark:bg-zinc-950 min-h-screen text-zinc-900 dark:text-zinc-100 overflow-clip transition-colors duration-500">
         <Navbar />
 
@@ -51,22 +50,26 @@ export default function Home() {
         >
           {/* 1. THE HERO SECTION */}
           <div className="min-h-screen flex flex-col items-center justify-center pt-32 pb-16">
-            {/* ADDED: dark:text-zinc-400 */}
             <p className="mb-8 text-sm font-bold tracking-[0.2em] uppercase text-zinc-500 dark:text-zinc-400 transition-colors duration-500">
               The Archive
             </p>
-            <SplitText text="Seamless Spatial" />
-            <SplitText text="Depth." delay={0.2} />
+
+            {/* =======================================================
+                 THE DELAY FIX
+                 First line waits for the page transition (0.8s)
+                 Second line waits slightly longer to keep the stagger (1.0s)
+                 ======================================================= */}
+            <SplitText text="Seamless Spatial" delay={0.8} />
+            <SplitText text="Depth." delay={1.0} />
           </div>
 
           {/* 2. THE ACCORDION COMPONENT */}
           <HeroProjects />
 
           {/* 3. THE SECOND OVERSIZE TEXT */}
-          {/* ADDED: dark:bg-zinc-950 */}
           <div className="h-screen flex flex-col items-center justify-center px-8 text-center bg-zinc-100 dark:bg-zinc-950 transition-colors duration-500">
+            {/* No delay needed here since it's below the fold! */}
             <SplitText text="Keep Scrolling" playOnce={true} />
-            {/* ADDED: dark:text-zinc-400 */}
             <p className="mt-8 text-xl font-medium tracking-widest uppercase text-zinc-500 dark:text-zinc-400 transition-colors duration-500">
               The sticky footer awaits.
             </p>
