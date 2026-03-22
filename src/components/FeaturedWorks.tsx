@@ -2,8 +2,8 @@
 
 import { useState, useRef } from "react";
 import { motion, useSpring } from "framer-motion";
-import Image from "next/image";
 import Link from "next/link";
+import Image from "next/image";
 import { useTransitionRouter } from "next-view-transitions";
 
 const FEATURED = [
@@ -110,7 +110,7 @@ const MaskText = ({
       <motion.div
         variants={{ initial: { top: "0%" }, hover: { top: "-100%" } }}
         transition={{ duration: 0.4, ease: [0.33, 1, 0.68, 1] }}
-        className={`absolute left-0 w-full h-full ${alignClass} text-zinc-900 dark:text-zinc-100 group-hover/item:text-zinc-400 dark:group-hover/item:text-zinc-600 transition-colors duration-500`}
+        className={`absolute left-0 w-full h-full ${alignClass} text-zinc-400 dark:text-zinc-600`}
       >
         {children}
       </motion.div>
@@ -137,7 +137,6 @@ export default function FeaturedWorks() {
   const cursorY = useSpring(0, { damping: 20, stiffness: 100, mass: 0.5 });
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    // We only want to calculate this math if we are on a desktop device
     if (!containerRef.current || window.innerWidth < 768) return;
     const rect = containerRef.current.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
@@ -182,13 +181,8 @@ export default function FeaturedWorks() {
             key={project.slug}
             href={`/work/${project.slug}`}
             onClick={handleNavigation(`/work/${project.slug}`)}
-            // Removed global height constraint so mobile can expand naturally!
             className="w-full block cursor-pointer group/item transition-colors duration-500 relative z-10 hover:z-20"
           >
-            {/* =======================================================
-                MOBILE LAYOUT (Editorial Feed)
-                Hidden on md+ screens. Uses standard flexbox layout.
-                ======================================================= */}
             <div className="flex md:hidden flex-col w-full gap-4 py-8 border-b border-zinc-200 dark:border-zinc-800">
               <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-zinc-200 dark:bg-zinc-800">
                 <Image
@@ -213,10 +207,6 @@ export default function FeaturedWorks() {
               </div>
             </div>
 
-            {/* =======================================================
-                DESKTOP LAYOUT (Hover Yard)
-                Hidden on mobile. Keeps the exact h-[55px] crushed layout!
-                ======================================================= */}
             <motion.div
               initial="initial"
               whileHover="hover"
@@ -246,10 +236,6 @@ export default function FeaturedWorks() {
         ))}
       </div>
 
-      {/* =======================================================
-          FLOATING IMAGE LAYER
-          Hidden entirely on mobile screens using hidden md:block!
-          ======================================================= */}
       <motion.div
         className="hidden md:block pointer-events-none absolute top-0 left-0 z-0"
         style={{ x: cursorX, y: cursorY }}
@@ -259,6 +245,8 @@ export default function FeaturedWorks() {
             {FEATURED.map((proj, i) => {
               const isActive = activeProject === i;
               const isPrev = prevProject === i;
+
+              if (!isActive && !isPrev) return null;
 
               let variant = "hiddenBottom";
               if (!isHoveringMenu) {
@@ -275,13 +263,18 @@ export default function FeaturedWorks() {
                   initial="hiddenBottom"
                   animate={variant}
                   transition={{ duration: 0.6, ease: [0.33, 1, 0.68, 1] }}
-                  style={{ zIndex: isActive ? 20 : isPrev ? 10 : 1 }}
+                  // Add willChange to perfectly accelerate the clip-path!
+                  style={{
+                    zIndex: isActive ? 20 : isPrev ? 10 : 1,
+                    willChange: "clip-path",
+                  }}
                 >
-                  <Image
+                  {/* Added decoding="async" to prevent main-thread stutter! */}
+                  <img
                     src={proj.src}
                     alt={proj.name}
-                    fill
-                    className="object-cover"
+                    className="w-full h-full object-cover"
+                    decoding="async"
                   />
                 </motion.div>
               );
@@ -293,6 +286,8 @@ export default function FeaturedWorks() {
               const isActive = activeProject === i;
               const isPrev = prevProject === i;
 
+              if (!isActive && !isPrev) return null;
+
               let variant = "hiddenBottom";
               if (!isHoveringMenu) {
                 variant = "hiddenTop";
@@ -303,7 +298,7 @@ export default function FeaturedWorks() {
               return (
                 <motion.div
                   key={`img2-${i}`}
-                  className="absolute inset-0 bg-zinc-300 dark:bg-zinc-900 shadow-2xl"
+                  className="absolute inset-0 bg-zinc-300 dark:bg-zinc-900"
                   variants={clipVariants}
                   initial="hiddenBottom"
                   animate={variant}
@@ -312,13 +307,17 @@ export default function FeaturedWorks() {
                     ease: [0.33, 1, 0.68, 1],
                     delay: 0.05,
                   }}
-                  style={{ zIndex: isActive ? 20 : isPrev ? 10 : 1 }}
+                  // Add willChange here too!
+                  style={{
+                    zIndex: isActive ? 20 : isPrev ? 10 : 1,
+                    willChange: "clip-path",
+                  }}
                 >
-                  <Image
+                  <img
                     src={proj.src}
                     alt={proj.name}
-                    fill
-                    className="object-cover"
+                    className="w-full h-full object-cover"
+                    decoding="async"
                   />
                 </motion.div>
               );

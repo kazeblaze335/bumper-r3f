@@ -16,16 +16,26 @@ export default function Home() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    const lenis = new Lenis();
+
+    const lenis = new Lenis({
+      lerp: 0.08,
+      smoothWheel: true,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+    });
+
     lenisRef.current = lenis;
+    let rafId: number;
 
     function raf(time: number) {
       lenis.raf(time);
-      requestAnimationFrame(raf);
+      rafId = requestAnimationFrame(raf);
     }
-    requestAnimationFrame(raf);
+    rafId = requestAnimationFrame(raf);
 
-    return () => lenis.destroy();
+    return () => {
+      lenis.destroy();
+      cancelAnimationFrame(rafId);
+    };
   }, []);
 
   useEffect(() => {
@@ -37,6 +47,19 @@ export default function Home() {
     if (footerRef.current) resizeObserver.observe(footerRef.current);
     return () => resizeObserver.disconnect();
   }, []);
+
+  // =======================================================
+  // THE PREMIUM SCROLL TRIGGER
+  // Uses the Lenis instance to glide smoothly to the top!
+  // =======================================================
+  const scrollToTop = () => {
+    if (lenisRef.current) {
+      // 1.5s duration makes the long journey back up feel cinematic
+      lenisRef.current.scrollTo(0, { duration: 1.5 });
+    } else {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
 
   return (
     <>
@@ -53,7 +76,6 @@ export default function Home() {
             <SplitText text="Depth." delay={0.4} />
           </div>
 
-          {/* REDUCED PADDING: Changed pb-32 to pb-16 */}
           <div className="w-full px-8 md:px-16 pb-16">
             <p className="mb-4 text-sm font-bold tracking-[0.2em] uppercase text-zinc-500 dark:text-zinc-400 transition-colors duration-500">
               Featured Works
@@ -61,7 +83,6 @@ export default function Home() {
             <FeaturedWorks />
           </div>
 
-          {/* REMOVED TOP MARGIN & REDUCED HEADER BOTTOM MARGIN */}
           <div className="w-full px-8 md:px-16 pb-32">
             <div className="w-full flex justify-center mb-8">
               <p className="text-xs font-bold tracking-[0.4em] uppercase text-zinc-400 dark:text-zinc-500 transition-colors duration-500">
@@ -79,8 +100,32 @@ export default function Home() {
           </div>
         </div>
 
+        {/* =======================================================
+            FOOTER WRAPPER
+            ======================================================= */}
         <div ref={footerRef} className="fixed bottom-0 left-0 w-full z-0">
           <Footer />
+
+          {/* THE "GO TO TOP" BUTTON */}
+          <button
+            onClick={scrollToTop}
+            className="absolute bottom-8 right-8 md:bottom-12 md:right-16 w-12 h-12 md:w-16 md:h-16 flex items-center justify-center rounded-full border border-zinc-300 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-900 hover:text-zinc-100 dark:hover:bg-zinc-100 dark:hover:text-zinc-900 transition-all duration-500 z-50 group"
+            aria-label="Scroll to top"
+          >
+            <svg
+              className="w-5 h-5 md:w-6 md:h-6 transform group-hover:-translate-y-1 transition-transform duration-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M12 19V5M5 12l7-7 7 7"
+              />
+            </svg>
+          </button>
         </div>
       </main>
     </>
