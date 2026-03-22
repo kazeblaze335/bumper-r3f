@@ -83,7 +83,7 @@ const PROJECTS = [
 ];
 
 // =======================================================
-// THE WAAPI PAGE ANIMATION
+// THE WAAPI PAGE ANIMATION (Tightened to 800ms)
 // =======================================================
 const pageAnimation = () => {
   document.documentElement.animate(
@@ -97,7 +97,7 @@ const pageAnimation = () => {
       },
     ],
     {
-      duration: 1200,
+      duration: 800,
       easing: "cubic-bezier(0.9, 0, 0.1, 1)",
       fill: "forwards",
       pseudoElement: "::view-transition-old(root)",
@@ -107,7 +107,7 @@ const pageAnimation = () => {
   document.documentElement.animate(
     [{ transform: "translateY(100%)" }, { transform: "translateY(0%)" }],
     {
-      duration: 1200,
+      duration: 800,
       easing: "cubic-bezier(0.9, 0, 0.1, 1)",
       fill: "forwards",
       pseudoElement: "::view-transition-new(root)",
@@ -124,7 +124,8 @@ export default function HeroProjects() {
 
   return (
     <div
-      className={`relative w-full flex flex-col pt-32 pb-8 px-8 bg-zinc-100 dark:bg-zinc-950 transition-colors duration-500 ${circular.className}`}
+      // Removed global padding here so it aligns with the Home page wrappers
+      className={`relative w-full flex flex-col bg-zinc-100 dark:bg-zinc-950 transition-colors duration-500 ${circular.className}`}
     >
       <div className="border-b border-zinc-200 dark:border-zinc-800 pb-2 mb-2 flex justify-between items-end uppercase text-xs font-bold tracking-[0.2em] text-zinc-400 dark:text-zinc-500 transition-colors duration-500">
         <div className="w-[45%]">Project Name</div>
@@ -161,15 +162,13 @@ function ProjectRow({
 }) {
   const [isHovered, setIsHovered] = useState(false);
 
-  // Initialize the transition router and pathname for the links
   const router = useTransitionRouter();
   const pathname = usePathname();
 
-  // Custom navigation handler for the case study links
   const handleNavigation =
     (path: string) => (e: React.MouseEvent<HTMLAnchorElement>) => {
       e.preventDefault();
-      e.stopPropagation(); // Crucial: prevents the accordion from toggling closed!
+      e.stopPropagation(); // Prevents the accordion from closing when the link is clicked
 
       if (pathname === path) return;
 
@@ -244,9 +243,6 @@ function ProjectRow({
                     {project.details}
                   </p>
 
-                  {/* =======================================================
-                      THE UPDATED LINK WITH TRANSITION
-                      ======================================================= */}
                   <Link
                     href={`/work/${project.slug}`}
                     className="inline-block border-b border-zinc-900 dark:border-zinc-100 pb-1 text-xs font-bold tracking-[0.2em] uppercase text-zinc-900 dark:text-zinc-100 hover:opacity-50 transition-opacity"

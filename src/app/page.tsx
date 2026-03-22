@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Lenis from "@studio-freight/lenis";
 import Navbar from "@/components/NavBar";
+import FeaturedWorks from "@/components/FeaturedWorks";
 import HeroProjects from "@/components/HeroProjects";
 import Footer from "@/components/Footer";
 import FilmGrain from "@/components/FilmGrain";
@@ -47,23 +48,30 @@ export default function Home() {
           className="relative z-10 bg-zinc-100 dark:bg-zinc-950 transition-colors duration-500"
           style={{ marginBottom: `${footerHeight}px` }}
         >
-          <div className="min-h-screen flex flex-col items-center justify-center pt-32 pb-16">
-            <p className="mb-8 text-sm font-bold tracking-[0.2em] uppercase text-zinc-500 dark:text-zinc-400 transition-colors duration-500">
-              The Archive
-            </p>
-
-            {/* =======================================================
-                 THE FASTER OVERLAP
-                 Reduced from 0.8 & 1.0 to 0.4 & 0.55 so the text 
-                 starts animating WHILE the page is still sliding up!
-                 ======================================================= */}
-            <SplitText text="Seamless Spatial" delay={0.4} />
-            <SplitText text="Depth." delay={0.55} />
+          <div className="min-h-[90vh] flex flex-col items-center justify-center pt-32 pb-16">
+            <SplitText text="Seamless Spatial" delay={0.25} />
+            <SplitText text="Depth." delay={0.4} />
           </div>
 
-          <HeroProjects />
+          {/* REDUCED PADDING: Changed pb-32 to pb-16 */}
+          <div className="w-full px-8 md:px-16 pb-16">
+            <p className="mb-4 text-sm font-bold tracking-[0.2em] uppercase text-zinc-500 dark:text-zinc-400 transition-colors duration-500">
+              Featured Works
+            </p>
+            <FeaturedWorks />
+          </div>
 
-          <div className="h-screen flex flex-col items-center justify-center px-8 text-center bg-zinc-100 dark:bg-zinc-950 transition-colors duration-500">
+          {/* REMOVED TOP MARGIN & REDUCED HEADER BOTTOM MARGIN */}
+          <div className="w-full px-8 md:px-16 pb-32">
+            <div className="w-full flex justify-center mb-8">
+              <p className="text-xs font-bold tracking-[0.4em] uppercase text-zinc-400 dark:text-zinc-500 transition-colors duration-500">
+                The Archive
+              </p>
+            </div>
+            <HeroProjects />
+          </div>
+
+          <div className="h-screen flex flex-col items-center justify-center px-8 text-center bg-zinc-100 dark:bg-zinc-950 transition-colors duration-500 border-t border-zinc-200 dark:border-zinc-800">
             <SplitText text="Keep Scrolling" playOnce={true} />
             <p className="mt-8 text-xl font-medium tracking-widest uppercase text-zinc-500 dark:text-zinc-400 transition-colors duration-500">
               The sticky footer awaits.
