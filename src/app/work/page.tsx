@@ -100,21 +100,15 @@ export default function WorkGallery() {
           className="relative z-10 bg-zinc-100 dark:bg-zinc-950 shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-colors duration-500"
           style={{ marginBottom: `${footerHeight}px` }}
         >
-          {/* Header */}
           <div className="pt-40 px-8 md:px-16 pb-20">
-            {/* =======================================================
-                THE DELAY FIX
-                Increased delay from 0.1 to 0.8 so it waits for the 
-                1.2s page transition to almost finish!
-                ======================================================= */}
+            {/* TIGHTENED ENTRY DELAY */}
             <SplitText
               text="SELECTED WORKS."
-              delay={0.8}
+              delay={0.4}
               className={`!text-[12vw] md:!text-[9vw] leading-[0.85] tracking-tight uppercase ${neueMontreal.className}`}
             />
           </div>
 
-          {/* Staggered Grid */}
           <div className="px-8 md:px-16 pb-32 max-w-[1800px] mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20">
               {PROJECTS.map((project, index) => {
@@ -127,10 +121,10 @@ export default function WorkGallery() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: "-100px" }}
                     transition={{
-                      duration: 0.8,
+                      duration: 0.6,
                       ease: [0.33, 1, 0.68, 1],
-                      delay: 0.2,
-                    }} // Added a slight initial delay here too
+                      delay: 0.1,
+                    }}
                     className={`flex flex-col group ${isEven ? "md:mt-32" : ""}`}
                   >
                     <Link href={`/work/${project.slug}`} className="w-full">
@@ -163,7 +157,6 @@ export default function WorkGallery() {
           </div>
         </div>
 
-        {/* Sticky Footer */}
         <div ref={footerRef} className="fixed bottom-0 left-0 w-full z-0">
           <Footer />
         </div>

@@ -43,32 +43,27 @@ export default function Home() {
       <main className="relative bg-zinc-100 dark:bg-zinc-950 min-h-screen text-zinc-900 dark:text-zinc-100 overflow-clip transition-colors duration-500">
         <Navbar />
 
-        {/* This wrapper slides up over the fixed footer */}
         <div
           className="relative z-10 bg-zinc-100 dark:bg-zinc-950 transition-colors duration-500"
           style={{ marginBottom: `${footerHeight}px` }}
         >
-          {/* 1. THE HERO SECTION */}
           <div className="min-h-screen flex flex-col items-center justify-center pt-32 pb-16">
             <p className="mb-8 text-sm font-bold tracking-[0.2em] uppercase text-zinc-500 dark:text-zinc-400 transition-colors duration-500">
               The Archive
             </p>
 
             {/* =======================================================
-                 THE DELAY FIX
-                 First line waits for the page transition (0.8s)
-                 Second line waits slightly longer to keep the stagger (1.0s)
+                 THE FASTER OVERLAP
+                 Reduced from 0.8 & 1.0 to 0.4 & 0.55 so the text 
+                 starts animating WHILE the page is still sliding up!
                  ======================================================= */}
-            <SplitText text="Seamless Spatial" delay={0.8} />
-            <SplitText text="Depth." delay={1.0} />
+            <SplitText text="Seamless Spatial" delay={0.4} />
+            <SplitText text="Depth." delay={0.55} />
           </div>
 
-          {/* 2. THE ACCORDION COMPONENT */}
           <HeroProjects />
 
-          {/* 3. THE SECOND OVERSIZE TEXT */}
           <div className="h-screen flex flex-col items-center justify-center px-8 text-center bg-zinc-100 dark:bg-zinc-950 transition-colors duration-500">
-            {/* No delay needed here since it's below the fold! */}
             <SplitText text="Keep Scrolling" playOnce={true} />
             <p className="mt-8 text-xl font-medium tracking-widest uppercase text-zinc-500 dark:text-zinc-400 transition-colors duration-500">
               The sticky footer awaits.
@@ -76,7 +71,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* THE FOOTER WRAPPER */}
         <div ref={footerRef} className="fixed bottom-0 left-0 w-full z-0">
           <Footer />
         </div>

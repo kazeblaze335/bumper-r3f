@@ -68,7 +68,6 @@ export default function AboutPage() {
           className="relative z-10 bg-zinc-100 dark:bg-zinc-950 shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-colors duration-500"
           style={{ marginBottom: `${footerHeight}px` }}
         >
-          {/* THE SOJU SIZZLE HEADER */}
           <div className="h-screen w-full sticky top-0 flex flex-col items-center justify-center overflow-hidden bg-zinc-200 dark:bg-zinc-900 transition-colors duration-500">
             <motion.div
               style={{ scale: sojuScale, opacity: sojuOpacity, y: sojuY }}
@@ -86,10 +85,10 @@ export default function AboutPage() {
           </div>
 
           <div className="relative z-10 bg-zinc-100 dark:bg-zinc-950 pt-32 md:pt-48 px-8 md:px-16 pb-40 transition-colors duration-500">
-            {/* DELAY SYNCED WITH VIEW TRANSITION */}
+            {/* TIGHTENED ENTRY DELAY */}
             <SplitText
               text="SYSTEMS & SPATIAL DESIGN."
-              delay={0.8}
+              delay={0.017}
               className={`!text-[8vw] md:!text-[6vw] leading-[0.85] tracking-tight uppercase max-w-5xl ${neueMontreal.className}`}
             />
 

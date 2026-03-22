@@ -83,10 +83,10 @@ export default function ProjectPage() {
         <Navbar />
 
         <div className="relative z-10 bg-zinc-100 dark:bg-zinc-950 pt-40 px-8 md:px-16 pb-20 transition-colors duration-500">
-          {/* DELAY SYNCED WITH VIEW TRANSITION */}
+          {/* TIGHTENED ENTRY DELAY */}
           <SplitText
             text={data.title}
-            delay={0.8}
+            delay={0.4}
             className={`!text-[12vw] md:!text-[9vw] leading-[0.85] tracking-tight uppercase ${neueMontreal.className}`}
           />
 
