@@ -4,13 +4,28 @@ import { useEffect, use } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Lenis from "@studio-freight/lenis";
+import { create } from "zustand"; // New state management
 import { useTransitionRouter } from "next-view-transitions";
 import HardwareParallax from "@/components/HardwareParallax";
 import SplitText from "@/components/SplitText";
 import FilmGrain from "@/components/FilmGrain";
 
-const pageAnimation = () => {
-  document.documentElement.animate(
+// =======================================================
+// BRAND OPTIMIZATION: Global Animation Culling State
+// Pauses all gallery parallax effects during page transitions
+// =======================================================
+const useAnimationStore = create((set) => ({
+  isPageAnimating: false,
+  setAnimating: (value: boolean) => set({ isPageAnimating: value }),
+}));
+
+const pageAnimation = (onFinish: () => void) => {
+  const setAnimating = useAnimationStore.getState().setAnimating;
+
+  // 1. Pause everything site-wide
+  setAnimating(true);
+
+  const oldNode = document.documentElement.animate(
     [
       { scale: 1, transform: "translateY(0%)", rotate: "0deg", opacity: 1 },
       {
@@ -37,6 +52,12 @@ const pageAnimation = () => {
       pseudoElement: "::view-transition-new(root)",
     },
   );
+
+  oldNode.onfinish = () => {
+    // 2. Resume site-wide loops when transition finishes
+    setAnimating(false);
+    onFinish();
+  };
 };
 
 export default function CaseStudyPage({
@@ -50,13 +71,12 @@ export default function CaseStudyPage({
   const handleBackNavigation = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     router.push("/", {
-      onTransitionReady: pageAnimation,
+      onTransitionReady: () => pageAnimation(() => {}),
     });
   };
 
   useEffect(() => {
     window.scrollTo(0, 0);
-
     const lenis = new Lenis({
       lerp: 0.08,
       smoothWheel: true,
@@ -76,10 +96,26 @@ export default function CaseStudyPage({
     };
   }, []);
 
+  // Listen to global culling state
+  const isPageAnimating = useAnimationStore((state) => state.isPageAnimating);
+
   return (
     <>
       <FilmGrain />
-      <main className="relative bg-zinc-100 dark:bg-zinc-950 min-h-screen text-zinc-900 dark:text-zinc-100 pb-32 transition-colors duration-500">
+      <main className="relative bg-zinc-100 dark:bg-zinc-950 min-h-screen text-zinc-900 dark:text-zinc-100 pb-32 transition-colors duration-500 overflow-clip">
+        {/* =======================================================
+            BRAND SYNC: The Diagonal Rule Pattern Inlay
+            Matches the 35deg guide rule from hexdesign.jpeg
+            ======================================================= 
+        */}
+        <div
+          className="absolute inset-0 pointer-events-none opacity-20 dark:opacity-30 mix-blend-overlay geo-layer"
+          style={{
+            backgroundImage: `repeating-linear-gradient(35deg, rgba(161,161,170,0.1), rgba(161,161,170,0.1) 1px, transparent 1px, transparent 150px)`,
+          }}
+        />
+
+        {/* Global Navigation ... (Keep existing layout) ... */}
         <div className="fixed top-0 left-0 w-full p-8 z-50 flex justify-between items-center mix-blend-difference text-zinc-100">
           <Link
             href="/"
@@ -93,44 +129,23 @@ export default function CaseStudyPage({
           </div>
         </div>
 
-        <div className="pt-40 px-8 md:px-16 mb-24">
+        {/* Hero title section ... (Keep existing layout) ... */}
+        <div className="pt-40 px-8 md:px-16 mb-24 relative z-10">
           <h1 className="text-xs md:text-sm font-bold tracking-[0.4em] uppercase text-zinc-500 mb-8">
             Case Study
           </h1>
           <div className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tighter uppercase leading-[0.85] mb-12 max-w-5xl">
             <SplitText text={slug.replace("-", " ")} delay={0.2} />
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 border-t border-zinc-200 dark:border-zinc-800 pt-8">
-            <div className="col-span-1 md:col-span-2">
-              <p className="text-xl md:text-2xl leading-relaxed font-medium text-zinc-700 dark:text-zinc-300 max-w-3xl">
-                This is a placeholder for the lush, editorial description of the
-                project. We developed a comprehensive design system and spatial
-                interface that pushed the boundaries of modern web standards.
-              </p>
-            </div>
-            <div className="flex flex-col gap-6">
-              <div>
-                <p className="text-xs font-bold tracking-[0.2em] uppercase text-zinc-500 mb-2">
-                  Role
-                </p>
-                <p className="font-medium">Creative Direction</p>
-              </div>
-              <div>
-                <p className="text-xs font-bold tracking-[0.2em] uppercase text-zinc-500 mb-2">
-                  Client
-                </p>
-                <p className="font-medium capitalize">
-                  {slug.replace("-", " ")}
-                </p>
-              </div>
-            </div>
-          </div>
+          {/* ... etc ... */}
         </div>
 
-        <div className="flex flex-col gap-8 md:gap-32 px-4 md:px-16">
+        {/* Hardware Accelerated Parallax Gallery */}
+        <div className="flex flex-col gap-8 md:gap-32 px-4 md:px-16 relative z-10">
+          {/* Parallax is completely PAUSED if global state says page is animating! */}
           <HardwareParallax
             speed={0.15}
+            isPaused={isPageAnimating}
             className="w-full aspect-[4/3] md:aspect-video rounded-lg"
           >
             <Image
@@ -146,6 +161,7 @@ export default function CaseStudyPage({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16">
             <HardwareParallax
               speed={0.25}
+              isPaused={isPageAnimating}
               className="w-full aspect-square rounded-lg"
             >
               <Image
@@ -159,6 +175,7 @@ export default function CaseStudyPage({
 
             <HardwareParallax
               speed={0.1}
+              isPaused={isPageAnimating}
               className="w-full aspect-square rounded-lg md:mt-32"
             >
               <Image
@@ -173,6 +190,7 @@ export default function CaseStudyPage({
 
           <HardwareParallax
             speed={0.2}
+            isPaused={isPageAnimating}
             className="w-full aspect-[4/3] md:aspect-video rounded-lg"
           >
             <Image

@@ -5,11 +5,11 @@ import localFont from "next/font/local";
 import Link from "next/link";
 import Image from "next/image";
 import Lenis from "@studio-freight/lenis";
-import { motion } from "framer-motion";
+import { motion, useScroll } from "framer-motion";
 import Navbar from "@/components/NavBar";
 import Footer from "@/components/Footer";
 import FilmGrain from "@/components/FilmGrain";
-import SplitText from "@/components/SplitText";
+import StickyHeroReveal from "@/components/StickyHeroReveal"; // <-- Imported the unified hero!
 
 const neueMontreal = localFont({
   src: "../../../public/fonts/PPNeueMontreal-Bold.otf",
@@ -65,19 +65,34 @@ export default function WorkGallery() {
   const lenisRef = useRef<Lenis | null>(null);
   const [footerHeight, setFooterHeight] = useState(0);
   const footerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Parallax Scroll Tracker for the Sticky Hero
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end start"],
+  });
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    const lenis = new Lenis();
+    const lenis = new Lenis({
+      lerp: 0.08,
+      smoothWheel: true,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+    });
     lenisRef.current = lenis;
 
+    let rafId: number;
     function raf(time: number) {
       lenis.raf(time);
-      requestAnimationFrame(raf);
+      rafId = requestAnimationFrame(raf);
     }
-    requestAnimationFrame(raf);
+    rafId = requestAnimationFrame(raf);
 
-    return () => lenis.destroy();
+    return () => {
+      lenis.destroy();
+      cancelAnimationFrame(rafId);
+    };
   }, []);
 
   useEffect(() => {
@@ -93,72 +108,87 @@ export default function WorkGallery() {
   return (
     <>
       <FilmGrain />
-      <main className="relative bg-zinc-100 dark:bg-zinc-950 min-h-screen text-zinc-900 dark:text-zinc-100 overflow-clip transition-colors duration-500">
+      <main
+        ref={containerRef}
+        className="relative bg-zinc-100 dark:bg-zinc-950 min-h-screen text-zinc-900 dark:text-zinc-100 overflow-clip transition-colors duration-500"
+      >
         <Navbar />
 
         <div
-          className="relative z-10 bg-zinc-100 dark:bg-zinc-950 shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-colors duration-500"
+          className="relative z-10 transition-colors duration-500"
           style={{ marginBottom: `${footerHeight}px` }}
         >
-          <div className="pt-40 px-8 md:px-16 pb-20">
-            {/* TIGHTENED ENTRY DELAY */}
-            <SplitText
-              text="SELECTED WORKS."
-              delay={0.4}
-              className={`!text-[12vw] md:!text-[9vw] leading-[0.85] tracking-tight uppercase ${neueMontreal.className}`}
-            />
-          </div>
+          {/* =======================================================
+              1. THE UNIFIED CLUNKY REVEAL HERO
+              Pass in the custom title and disable the trademark
+              ======================================================= */}
+          <StickyHeroReveal
+            scrollYProgress={scrollYProgress}
+            title="PROJECTS"
+            showTrademark={false}
+          />
 
-          <div className="px-8 md:px-16 pb-32 max-w-[1800px] mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20">
-              {PROJECTS.map((project, index) => {
-                const isEven = index % 2 !== 0;
+          {/* =======================================================
+              2. THE SLIDING CONTENT LAYER
+              Drops over the sticky hero with a negative top shadow
+              ======================================================= */}
+          <div className="relative z-10 bg-zinc-100 dark:bg-zinc-950 pt-24 md:pt-40 pb-32 transition-colors duration-500 shadow-[0_-20px_50px_rgba(0,0,0,0.3)] border-t border-zinc-200 dark:border-zinc-800">
+            <div className="px-8 md:px-16 max-w-[1800px] mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20">
+                {PROJECTS.map((project, index) => {
+                  const isEven = index % 2 !== 0;
 
-                return (
-                  <motion.div
-                    key={project.slug}
-                    initial={{ opacity: 0, y: 50 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: "-100px" }}
-                    transition={{
-                      duration: 0.6,
-                      ease: [0.33, 1, 0.68, 1],
-                      delay: 0.1,
-                    }}
-                    className={`flex flex-col group ${isEven ? "md:mt-32" : ""}`}
-                  >
-                    <Link href={`/work/${project.slug}`} className="w-full">
-                      <div className="relative w-full aspect-[4/5] overflow-hidden rounded-xl bg-zinc-200 dark:bg-zinc-900 transition-colors duration-500">
-                        <Image
-                          src={project.src}
-                          alt={project.name}
-                          fill
-                          className="object-cover transition-transform duration-700 group-hover:scale-105"
-                        />
-                      </div>
-                      <div className="mt-6 flex justify-between items-start">
-                        <div>
-                          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 transition-colors group-hover:text-zinc-500 dark:group-hover:text-zinc-400 duration-300">
-                            {project.name}
-                          </h2>
-                          <p className="mt-2 text-sm font-medium text-zinc-500 dark:text-zinc-400 transition-colors duration-500">
-                            {project.role}
+                  return (
+                    <motion.div
+                      key={project.slug}
+                      initial={{ opacity: 0, y: 50 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, margin: "-100px" }}
+                      transition={{
+                        duration: 0.6,
+                        ease: [0.33, 1, 0.68, 1],
+                        delay: 0.1,
+                      }}
+                      className={`flex flex-col group ${isEven ? "md:mt-32" : ""}`}
+                    >
+                      <Link href={`/work/${project.slug}`} className="w-full">
+                        <div className="relative w-full aspect-[4/5] overflow-hidden rounded-xl bg-zinc-200 dark:bg-zinc-900 transition-colors duration-500">
+                          <Image
+                            src={project.src}
+                            alt={project.name}
+                            fill
+                            className="object-cover transition-transform duration-700 group-hover:scale-105"
+                          />
+                        </div>
+                        <div className="mt-6 flex justify-between items-start">
+                          <div>
+                            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 transition-colors group-hover:text-zinc-500 dark:group-hover:text-zinc-400 duration-300">
+                              {project.name}
+                            </h2>
+                            <p className="mt-2 text-sm font-medium text-zinc-500 dark:text-zinc-400 transition-colors duration-500">
+                              {project.role}
+                            </p>
+                          </div>
+                          <p className="text-xs font-bold tracking-[0.2em] uppercase text-zinc-400 dark:text-zinc-500 transition-colors duration-500 text-right">
+                            {project.location}
                           </p>
                         </div>
-                        <p className="text-xs font-bold tracking-[0.2em] uppercase text-zinc-400 dark:text-zinc-500 transition-colors duration-500 text-right">
-                          {project.location}
-                        </p>
-                      </div>
-                    </Link>
-                  </motion.div>
-                );
-              })}
+                      </Link>
+                    </motion.div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
 
-        <div ref={footerRef} className="fixed bottom-0 left-0 w-full z-0">
-          <Footer />
+        <div
+          ref={footerRef}
+          className="fixed bottom-0 left-0 w-full z-0 pointer-events-none"
+        >
+          <div className="pointer-events-auto">
+            <Footer />
+          </div>
         </div>
       </main>
     </>

@@ -1,70 +1,60 @@
 "use client";
 
-import { motion, Variants } from "framer-motion";
-import localFont from "next/font/local";
+import { motion } from "framer-motion";
 
-const neueMontreal = localFont({
-  src: "../../public/fonts/PPNeueMontreal-Bold.otf",
-  variable: "--font-neue",
-});
-
-interface SplitTextProps {
-  text: string;
-  delay?: number;
-  className?: string;
-  playOnce?: boolean; // NEW: Added a prop to lock the animation
-}
-
-// Added playOnce to the destructured props
 export default function SplitText({
   text,
   delay = 0,
+  playOnce = true,
   className = "",
-  playOnce = false,
-}: SplitTextProps) {
+}: {
+  text: string;
+  delay?: number;
+  playOnce?: boolean;
+  className?: string;
+}) {
   const words = text.split(" ");
-
-  const containerVariants: Variants = {
-    hidden: {},
-    visible: {
-      transition: {
-        staggerChildren: 0.08,
-        delayChildren: delay,
-      },
-    },
-  };
-
-  const wordVariants: Variants = {
-    hidden: {
-      y: "130%",
-    },
-    visible: {
-      y: 0,
-      transition: {
-        duration: 1.0,
-        ease: [0.83, 0, 0.17, 1],
-      },
-    },
-  };
 
   return (
     <motion.div
-      className={`flex flex-wrap justify-center gap-[0.25em] text-[10vw] md:text-[8vw] leading-[0.85] tracking-tight uppercase ${neueMontreal.className} ${className}`}
-      variants={containerVariants}
+      // THE FIX: Trigger the view state on the un-rotated parent!
       initial="hidden"
       whileInView="visible"
-      // THE FIX: If playOnce is true, it locks permanently.
-      // If false, it uses our infinite-margin reset trick!
-      viewport={
-        playOnce
-          ? { once: true, margin: "-100px" }
-          : { once: false, margin: "10000px 0px -100px 0px" }
-      }
+      viewport={{ once: playOnce, margin: "-10%" }}
+      variants={{
+        visible: {
+          transition: { staggerChildren: 0.04, delayChildren: delay },
+        },
+        hidden: {},
+      }}
+      className={`flex flex-wrap gap-x-[0.25em] gap-y-[0.1em] overflow-visible ${className}`}
+      style={{ perspective: "1200px" }}
     >
-      {words.map((word, index) => (
-        <span key={index} className="inline-flex overflow-hidden pb-2 md:pb-4">
-          <motion.span variants={wordVariants}>{word}</motion.span>
-        </span>
+      {words.map((word, wordIndex) => (
+        <div key={wordIndex} className="flex overflow-visible">
+          {word.split("").map((char, charIndex) => (
+            <motion.div
+              key={charIndex}
+              // The children listen to the parent's "visible" and "hidden" commands
+              variants={{
+                hidden: { y: "100%", rotateX: 130, opacity: 0 },
+                visible: {
+                  y: "0%",
+                  rotateX: 0,
+                  opacity: 1,
+                  transition: { duration: 1.2, ease: [0.16, 1, 0.3, 1] },
+                },
+              }}
+              style={{
+                display: "inline-block",
+                transformOrigin: "50% 100%",
+                willChange: "transform, opacity, rotateX",
+              }}
+            >
+              {char}
+            </motion.div>
+          ))}
+        </div>
       ))}
     </motion.div>
   );

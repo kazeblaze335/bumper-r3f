@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { useScroll } from "framer-motion";
 import localFont from "next/font/local";
 import Lenis from "@studio-freight/lenis";
 import Navbar from "@/components/NavBar";
@@ -9,6 +9,7 @@ import Footer from "@/components/Footer";
 import FilmGrain from "@/components/FilmGrain";
 import SplitText from "@/components/SplitText";
 import Image from "next/image";
+import StickyHeroReveal from "@/components/StickyHeroReveal"; // <-- Import the new component
 
 const neueMontreal = localFont({
   src: "../../../public/fonts/PPNeueMontreal-Bold.otf",
@@ -16,7 +17,6 @@ const neueMontreal = localFont({
 });
 
 export default function AboutPage() {
-  const [isLoading, setIsLoading] = useState(true);
   const [footerHeight, setFooterHeight] = useState(0);
   const footerRef = useRef<HTMLDivElement>(null);
   const lenisRef = useRef<Lenis | null>(null);
@@ -26,10 +26,6 @@ export default function AboutPage() {
     target: containerRef,
     offset: ["start start", "end start"],
   });
-
-  const sojuScale = useTransform(scrollYProgress, [0, 1], [1, 0.8]);
-  const sojuOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
-  const sojuY = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -65,27 +61,14 @@ export default function AboutPage() {
         <Navbar />
 
         <div
-          className="relative z-10 bg-zinc-100 dark:bg-zinc-950 shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-colors duration-500"
+          className="relative z-10 transition-colors duration-500"
           style={{ marginBottom: `${footerHeight}px` }}
         >
-          <div className="h-screen w-full sticky top-0 flex flex-col items-center justify-center overflow-hidden bg-zinc-200 dark:bg-zinc-900 transition-colors duration-500">
-            <motion.div
-              style={{ scale: sojuScale, opacity: sojuOpacity, y: sojuY }}
-              className={`text-[25vw] leading-[0.75] tracking-tighter uppercase text-zinc-900 dark:text-zinc-100 ${neueMontreal.className}`}
-            >
-              SOJU
-              <span className="text-[10vw] align-top relative top-4">®</span>
-            </motion.div>
-            <motion.p
-              style={{ opacity: sojuOpacity }}
-              className="absolute bottom-12 text-xs font-bold tracking-[0.2em] uppercase text-zinc-500 dark:text-zinc-400"
-            >
-              Scroll to discover
-            </motion.p>
-          </div>
+          {/* THE NEW MODULAR COMPONENT */}
+          <StickyHeroReveal scrollYProgress={scrollYProgress} />
 
-          <div className="relative z-10 bg-zinc-100 dark:bg-zinc-950 pt-32 md:pt-48 px-8 md:px-16 pb-40 transition-colors duration-500">
-            {/* TIGHTENED ENTRY DELAY */}
+          {/* THE CONTENT LAYER SLIDING OVER IT */}
+          <div className="relative z-10 bg-zinc-100 dark:bg-zinc-950 pt-32 md:pt-48 px-8 md:px-16 pb-40 transition-colors duration-500 shadow-[0_-20px_50px_rgba(0,0,0,0.3)]">
             <SplitText
               text="SYSTEMS & SPATIAL DESIGN."
               delay={0.017}
@@ -150,8 +133,13 @@ export default function AboutPage() {
           </div>
         </div>
 
-        <div ref={footerRef} className="fixed bottom-0 left-0 w-full z-0">
-          <Footer />
+        <div
+          ref={footerRef}
+          className="fixed bottom-0 left-0 w-full z-0 pointer-events-none"
+        >
+          <div className="pointer-events-auto">
+            <Footer />
+          </div>
         </div>
       </main>
     </>

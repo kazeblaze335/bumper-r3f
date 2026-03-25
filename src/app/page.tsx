@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useScroll } from "framer-motion";
 import Lenis from "@studio-freight/lenis";
 import Navbar from "@/components/NavBar";
 import FeaturedWorks from "@/components/FeaturedWorks";
@@ -8,11 +9,20 @@ import HeroProjects from "@/components/HeroProjects";
 import Footer from "@/components/Footer";
 import FilmGrain from "@/components/FilmGrain";
 import SplitText from "@/components/SplitText";
+import StickyHeroReveal from "@/components/StickyHeroReveal"; // <-- Import the new component
+import SwissVideoBlock from "@/components/SwissVideoBlock";
 
 export default function Home() {
   const lenisRef = useRef<Lenis | null>(null);
   const [footerHeight, setFooterHeight] = useState(0);
   const footerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Track the scroll to pass down to our new component
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end start"],
+  });
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -48,13 +58,8 @@ export default function Home() {
     return () => resizeObserver.disconnect();
   }, []);
 
-  // =======================================================
-  // THE PREMIUM SCROLL TRIGGER
-  // Uses the Lenis instance to glide smoothly to the top!
-  // =======================================================
   const scrollToTop = () => {
     if (lenisRef.current) {
-      // 1.5s duration makes the long journey back up feel cinematic
       lenisRef.current.scrollTo(0, { duration: 1.5 });
     } else {
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -64,52 +69,72 @@ export default function Home() {
   return (
     <>
       <FilmGrain />
-      <main className="relative bg-zinc-100 dark:bg-zinc-950 min-h-screen text-zinc-900 dark:text-zinc-100 overflow-clip transition-colors duration-500">
+      <main
+        ref={containerRef}
+        className="relative bg-zinc-100 dark:bg-zinc-950 min-h-screen text-zinc-900 dark:text-zinc-100 overflow-clip transition-colors duration-500"
+      >
         <Navbar />
 
         <div
-          className="relative z-10 bg-zinc-100 dark:bg-zinc-950 transition-colors duration-500"
+          className="relative z-10 transition-colors duration-500"
           style={{ marginBottom: `${footerHeight}px` }}
         >
-          <div className="min-h-[90vh] flex flex-col items-center justify-center pt-32 pb-16">
-            <SplitText text="Seamless Spatial" delay={0.25} />
-            <SplitText text="Depth." delay={0.4} />
-          </div>
+          {/* =======================================================
+              1. THE NEW COMPONENT 
+              ======================================================= */}
+          <StickyHeroReveal scrollYProgress={scrollYProgress} />
 
-          <div className="w-full px-8 md:px-16 pb-16">
-            <p className="mb-4 text-sm font-bold tracking-[0.2em] uppercase text-zinc-500 dark:text-zinc-400 transition-colors duration-500">
-              Featured Works
-            </p>
-            <FeaturedWorks />
-          </div>
+          {/* =======================================================
+              2. THE SLIDING CONTENT LAYER
+              Added a subtle negative top shadow so it pops over the hero
+              ======================================================= */}
+          <div className="relative z-10 bg-zinc-100 dark:bg-zinc-950 pt-24 pb-16 transition-colors duration-500 shadow-[0_-20px_50px_rgba(0,0,0,0.3)]">
+            <div className="w-full px-8 md:px-16 pb-16">
+              <p className="mb-4 text-sm font-bold tracking-[0.2em] uppercase text-zinc-500 dark:text-zinc-400 transition-colors duration-500">
+                Featured Works
+              </p>
+              <FeaturedWorks />
+              <SwissVideoBlock />
+            </div>
 
-          <div className="w-full px-8 md:px-16 pb-32">
-            <div className="w-full flex justify-center mb-8">
-              <p className="text-xs font-bold tracking-[0.4em] uppercase text-zinc-400 dark:text-zinc-500 transition-colors duration-500">
-                The Archive
+            {/* <div className="w-full px-8 md:px-16 pb-32">
+              <div className="w-full flex justify-center mb-8">
+                <p className="text-xs font-bold tracking-[0.4em] uppercase text-zinc-400 dark:text-zinc-500 transition-colors duration-500">
+                  The Archive
+                </p>
+              </div>
+              <HeroProjects />
+            </div> */}
+
+            <div className="h-screen flex flex-col items-center justify-center px-8 text-center border-t border-zinc-200 dark:border-zinc-800 transition-colors duration-500">
+              <SplitText
+                text="KEEP SCROLLING"
+                playOnce={true}
+                delay={0.1}
+                // The classes MUST be passed here to override the component defaults
+                className="text-[18vw] md:text-[12vw] font-bold tracking-tighter uppercase leading-[0.85] text-zinc-900 dark:text-zinc-100"
+              />
+              <p className="mt-8 text-xl font-medium tracking-widest uppercase text-zinc-500 dark:text-zinc-400 transition-colors duration-500">
+                The sticky footer awaits.
               </p>
             </div>
-            <HeroProjects />
-          </div>
-
-          <div className="h-screen flex flex-col items-center justify-center px-8 text-center bg-zinc-100 dark:bg-zinc-950 transition-colors duration-500 border-t border-zinc-200 dark:border-zinc-800">
-            <SplitText text="Keep Scrolling" playOnce={true} />
-            <p className="mt-8 text-xl font-medium tracking-widest uppercase text-zinc-500 dark:text-zinc-400 transition-colors duration-500">
-              The sticky footer awaits.
-            </p>
           </div>
         </div>
 
         {/* =======================================================
-            FOOTER WRAPPER
+            3. THE STICKY FOOTER
             ======================================================= */}
-        <div ref={footerRef} className="fixed bottom-0 left-0 w-full z-0">
-          <Footer />
+        <div
+          ref={footerRef}
+          className="fixed bottom-0 left-0 w-full z-0 pointer-events-none"
+        >
+          <div className="pointer-events-auto">
+            <Footer />
+          </div>
 
-          {/* THE "GO TO TOP" BUTTON */}
           <button
             onClick={scrollToTop}
-            className="absolute bottom-8 right-8 md:bottom-12 md:right-16 w-12 h-12 md:w-16 md:h-16 flex items-center justify-center rounded-full border border-zinc-300 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-900 hover:text-zinc-100 dark:hover:bg-zinc-100 dark:hover:text-zinc-900 transition-all duration-500 z-50 group"
+            className="pointer-events-auto absolute bottom-8 right-8 md:bottom-12 md:right-16 w-12 h-12 md:w-16 md:h-16 flex items-center justify-center rounded-full border border-zinc-300 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-900 hover:text-zinc-100 dark:hover:bg-zinc-100 dark:hover:text-zinc-900 transition-all duration-500 z-50 group"
             aria-label="Scroll to top"
           >
             <svg
