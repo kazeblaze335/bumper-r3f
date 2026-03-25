@@ -1,5 +1,19 @@
 @import "tailwindcss";
 
+@layer utilities {
+  @keyframes diagonalShine {
+    100% {
+      left: 125%;
+    }
+  }
+}
+
+/* Base style for the interactive geometric layers across the site */
+.geo-layer {
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
 /* Add this to enable class-based dark mode in Tailwind v4! */
 @custom-variant dark (&:where(.dark, .dark *));
 

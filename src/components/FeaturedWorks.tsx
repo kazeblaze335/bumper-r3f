@@ -80,12 +80,17 @@ const pageAnimation = () => {
   );
 };
 
-const clipVariants = {
-  hiddenBottom: { clipPath: "polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)" },
-  visible: { clipPath: "polygon(0% 100%, 100% 100%, 100% 0%, 0% 0%)" },
-  hiddenTop: { clipPath: "polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)" },
+const maskVariants = {
+  hiddenBottom: { clipPath: "polygon(50% 100%, 50% 100%, 50% 100%, 50% 100%)" },
+  visible: { clipPath: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)" },
+  hiddenTop: { clipPath: "polygon(50% 0%, 50% 0%, 50% 0%, 50% 0%)" },
 };
 
+// =======================================================
+// ARTIFACT FIX
+// Switched from 'top' to 'y' translation for perfect sub-pixel rendering.
+// Added a wrapping span to ensure line-heights calculate flawlessly.
+// =======================================================
 const MaskText = ({
   children,
   align = "left",
@@ -97,28 +102,27 @@ const MaskText = ({
 }) => {
   const alignClass =
     align === "center"
-      ? "text-center"
+      ? "justify-center text-center"
       : align === "right"
-        ? "text-right"
-        : "text-left";
-
+        ? "justify-end text-right"
+        : "justify-start text-left";
   return (
     <div
-      className={`relative w-full h-full overflow-hidden block ${className}`}
+      className={`relative w-full h-full overflow-hidden flex flex-col ${alignClass} ${className}`}
     >
       <motion.div
-        variants={{ initial: { top: "0%" }, hover: { top: "-100%" } }}
-        transition={{ duration: 0.4, ease: [0.33, 1, 0.68, 1] }}
-        className={`absolute left-0 w-full h-full ${alignClass} text-zinc-400 dark:text-zinc-600`}
+        variants={{ initial: { y: "0%" }, hover: { y: "-100%" } }}
+        transition={{ duration: 0.5, ease: [0.33, 1, 0.68, 1] }}
+        className="absolute inset-0 flex items-center w-full text-zinc-400 dark:text-zinc-600 transition-colors duration-500"
       >
-        {children}
+        <span className={`w-full ${alignClass}`}>{children}</span>
       </motion.div>
       <motion.div
-        variants={{ initial: { top: "100%" }, hover: { top: "0%" } }}
-        transition={{ duration: 0.4, ease: [0.33, 1, 0.68, 1] }}
-        className={`absolute left-0 w-full h-full ${alignClass} text-zinc-900 dark:text-zinc-100`}
+        variants={{ initial: { y: "100%" }, hover: { y: "0%" } }}
+        transition={{ duration: 0.5, ease: [0.33, 1, 0.68, 1] }}
+        className="absolute inset-0 flex items-center w-full text-zinc-900 dark:text-zinc-100 transition-colors duration-500"
       >
-        {children}
+        <span className={`w-full ${alignClass}`}>{children}</span>
       </motion.div>
     </div>
   );
@@ -126,41 +130,33 @@ const MaskText = ({
 
 export default function FeaturedWorks() {
   const [activeProject, setActiveProject] = useState<number | null>(null);
-  const [prevProject, setPrevProject] = useState<number | null>(null);
-  const [isHoveringMenu, setIsHoveringMenu] = useState(false);
-
   const containerRef = useRef<HTMLDivElement>(null);
   const floatingImageRef = useRef<HTMLDivElement>(null);
+  const trailingImageRef = useRef<HTMLDivElement>(null);
+  const diagonalRulesRef = useRef<(HTMLDivElement | null)[]>([]);
   const router = useTransitionRouter();
 
-  // 1. Core target values (Raw JS numbers, skipping React State)
   const targetX = useMotionValue(0);
   const targetY = useMotionValue(0);
 
-  // 2. Heavy Springs doing the physics calculations
-  const cursorX = useSpring(targetX, {
-    damping: 20,
-    stiffness: 100,
-    mass: 0.5,
-  });
-  const cursorY = useSpring(targetY, {
-    damping: 20,
-    stiffness: 100,
-    mass: 0.5,
-  });
+  const cursorX = useSpring(targetX, { damping: 25, stiffness: 80, mass: 1 });
+  const cursorY = useSpring(targetY, { damping: 25, stiffness: 80, mass: 1 });
 
-  // 3. The Direct DOM Mutation Subscription
-  // This completely bypasses React's render phase!
   useEffect(() => {
-    // Unsubscribe from X
     const unsubX = cursorX.on("change", (latestX) => {
       if (floatingImageRef.current) {
-        // Using translate3d offloads this specific math to the GPU
         floatingImageRef.current.style.transform = `translate3d(${latestX}px, ${cursorY.get()}px, 0)`;
       }
+      if (trailingImageRef.current) {
+        trailingImageRef.current.style.transform = `translate3d(${latestX + 15}px, ${cursorY.get() + 15}px, 0)`;
+      }
+      diagonalRulesRef.current.forEach((rule) => {
+        if (rule) {
+          rule.style.transform = `translate3d(${latestX * 0.15}px, -50%, 0) rotate(35deg)`;
+        }
+      });
     });
 
-    // Unsubscribe from Y
     const unsubY = cursorY.on("change", (latestY) => {
       if (floatingImageRef.current) {
         floatingImageRef.current.style.transform = `translate3d(${cursorX.get()}px, ${latestY}px, 0)`;
@@ -176,98 +172,95 @@ export default function FeaturedWorks() {
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!containerRef.current || window.innerWidth < 768) return;
     const rect = containerRef.current.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-
-    const isLeftHalf = mouseX < rect.width / 2;
-    // Set the motion values directly, triggering the springs
-    targetX.set(isLeftHalf ? rect.width * 0.1 : rect.width * 0.9 - 225);
-    targetY.set(e.clientY - rect.top - 137);
+    targetX.set(e.clientX - rect.left - 137);
+    targetY.set(e.clientY - rect.top - 187);
   };
 
   const handleMouseEnterRow = (index: number) => {
     if (activeProject !== index && window.innerWidth >= 768) {
-      setPrevProject(activeProject);
       setActiveProject(index);
     }
-  };
-
-  const handleMouseLeaveMenu = () => {
-    setIsHoveringMenu(false);
   };
 
   const handleNavigation =
     (path: string) => (e: React.MouseEvent<HTMLAnchorElement>) => {
       e.preventDefault();
-      router.push(path, {
-        onTransitionReady: pageAnimation,
-      });
+      router.push(path, { onTransitionReady: pageAnimation });
     };
 
   return (
     <div
       ref={containerRef}
       onMouseMove={handleMouseMove}
-      onMouseEnter={() => setIsHoveringMenu(true)}
-      onMouseLeave={handleMouseLeaveMenu}
-      className="relative w-full py-0 md:py-12 group/menu transition-colors duration-500"
+      onMouseEnter={() => targetY.set(targetY.get())}
+      onMouseLeave={() => setActiveProject(null)}
+      className="relative w-full py-0 md:py-12 group/menu"
     >
+      {/* =======================================================
+          THE SVG LIQUID DISPLACEMENT ENGINE
+          ======================================================= */}
+      <svg className="hidden">
+        <filter id="squishy-water">
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.015"
+            numOctaves="3"
+            result="noise"
+          />
+          <feDisplacementMap
+            in="SourceGraphic"
+            in2="noise"
+            scale="15"
+            xChannelSelector="R"
+            yChannelSelector="G"
+          />
+        </filter>
+      </svg>
+
       <div className="flex flex-col w-full relative z-10 max-w-7xl mx-auto">
         {FEATURED.map((project, index) => (
           <Link
             key={project.slug}
             href={`/work/${project.slug}`}
             onClick={handleNavigation(`/work/${project.slug}`)}
-            className="w-full block cursor-pointer group/item transition-colors duration-500 relative z-10 hover:z-20"
+            // =======================================================
+            // CROPPING FIX
+            // Height expanded to h-[120px] to give the text room.
+            // =======================================================
+            className="w-full h-[80px] md:h-[120px] block cursor-pointer group/item border-b md:border-b-0 border-zinc-200 dark:border-zinc-800 relative z-10"
           >
-            {/* MOBILE LAYOUT */}
-            <div className="flex md:hidden flex-col w-full gap-4 py-8 border-b border-zinc-200 dark:border-zinc-800">
-              {/* Added loading="lazy" and decoding="async" to mobile fallback images */}
-              <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-zinc-200 dark:bg-zinc-800">
-                <img
-                  src={project.src}
-                  alt={project.name}
-                  loading="lazy"
-                  decoding="async"
-                  className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
-                />
-              </div>
-              <div className="flex justify-between items-end">
-                <div className="flex flex-col">
-                  <span className="text-xs font-bold tracking-[0.2em] uppercase text-zinc-500 dark:text-zinc-400 mb-2">
-                    {project.client}
-                  </span>
-                  <span className="text-3xl font-bold tracking-tight uppercase leading-none text-zinc-900 dark:text-zinc-100">
-                    {project.name}
-                  </span>
-                </div>
-                <span className="text-xs font-bold tracking-[0.2em] uppercase text-zinc-500 dark:text-zinc-400 pb-1">
-                  {project.tag}
-                </span>
-              </div>
-            </div>
-
-            {/* DESKTOP LAYOUT */}
             <motion.div
               initial="initial"
               whileHover="hover"
               onMouseEnter={() => handleMouseEnterRow(index)}
-              className="hidden md:flex w-full h-[55px] justify-between items-start"
+              className="hidden md:flex w-full h-full justify-between items-center relative px-12"
             >
+              {/* THE TURQUOISE BRAND ACCENT */}
+              <div
+                ref={(el) => {
+                  if (el) diagonalRulesRef.current[index] = el;
+                }}
+                className="absolute top-1/2 left-0 h-[1px] w-[50%] bg-[#00E5FF] opacity-0 group-hover/menu:opacity-100 will-change-transform z-20"
+              />
+
               <MaskText
                 align="left"
-                className="flex-1 text-[14px] font-bold tracking-[0.2em] uppercase pt-[6px]"
+                className="flex-[0.5] text-[12px] font-bold tracking-[0.2em] uppercase"
               >
                 {project.client}
               </MaskText>
+
+              {/* Reset leading to 'none' to stop the clipping box */}
               <MaskText
                 align="center"
-                className="flex-[4] text-[60px] font-bold tracking-tight uppercase leading-none"
+                className="flex-[4] text-[60px] md:text-[80px] font-bold tracking-tighter uppercase leading-none pb-2"
               >
                 {project.name}
               </MaskText>
+
               <MaskText
                 align="right"
-                className="flex-1 text-[14px] font-bold tracking-[0.2em] uppercase pt-[6px]"
+                className="flex-[0.5] text-[12px] font-bold tracking-[0.2em] uppercase"
               >
                 {project.tag}
               </MaskText>
@@ -276,96 +269,50 @@ export default function FeaturedWorks() {
         ))}
       </div>
 
-      {/* =======================================================
-        THE DIRECT DOM REF CONTAINER
-        Removed motion.div, replaced with standard div and a ref.
-        Because we use translate3d in the hook above, the GPU handles it.
-        ======================================================= 
-      */}
       <div
         ref={floatingImageRef}
         className="hidden md:block pointer-events-none absolute top-0 left-0 z-0 will-change-transform"
       >
-        <div className="relative w-[225px] h-[275px]">
+        <div className="relative w-[275px] h-[375px]">
           <div className="absolute inset-0">
             {FEATURED.map((proj, i) => {
               const isActive = activeProject === i;
-              const isPrev = prevProject === i;
-
-              if (!isActive && !isPrev) return null;
-
-              let variant = "hiddenBottom";
-              if (!isHoveringMenu) {
-                variant = "hiddenTop";
-              } else if (isActive || isPrev) {
-                variant = "visible";
-              }
 
               return (
                 <motion.div
                   key={`img1-${i}`}
-                  className="absolute inset-0 bg-zinc-200 dark:bg-zinc-800"
-                  variants={clipVariants}
+                  className="absolute inset-0 bg-zinc-900 overflow-hidden"
+                  variants={maskVariants}
                   initial="hiddenBottom"
-                  animate={variant}
-                  transition={{ duration: 0.6, ease: [0.33, 1, 0.68, 1] }}
-                  style={{
-                    zIndex: isActive ? 20 : isPrev ? 10 : 1,
-                    willChange: "clip-path",
-                  }}
+                  animate={isActive ? "visible" : "hiddenBottom"}
+                  transition={{ duration: 0.8, ease: [0.33, 1, 0.68, 1] }}
+                  style={{ zIndex: isActive ? 20 : 1, willChange: "clip-path" }}
                 >
                   <img
                     src={proj.src}
                     alt={proj.name}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover scale-[1.3] filter grayscale"
                     decoding="async"
                   />
+                  <div className="absolute -inset-x-20 top-0 h-full w-[40%] bg-white/40 blur-xl opacity-0 group-hover/item:animate-[diagonalShine_0.6s_ease-out_forwards] -skew-x-35 pointer-events-none z-10" />
                 </motion.div>
               );
             })}
           </div>
 
-          <div className="absolute inset-0 top-[20px] left-[20px]">
-            {FEATURED.map((proj, i) => {
-              const isActive = activeProject === i;
-              const isPrev = prevProject === i;
-
-              if (!isActive && !isPrev) return null;
-
-              let variant = "hiddenBottom";
-              if (!isHoveringMenu) {
-                variant = "hiddenTop";
-              } else if (isActive || isPrev) {
-                variant = "visible";
-              }
-
-              return (
-                <motion.div
-                  key={`img2-${i}`}
-                  className="absolute inset-0 bg-zinc-300 dark:bg-zinc-900"
-                  variants={clipVariants}
-                  initial="hiddenBottom"
-                  animate={variant}
-                  transition={{
-                    duration: 0.6,
-                    ease: [0.33, 1, 0.68, 1],
-                    delay: 0.05,
-                  }}
-                  style={{
-                    zIndex: isActive ? 20 : isPrev ? 10 : 1,
-                    willChange: "clip-path",
-                  }}
-                >
-                  <img
-                    src={proj.src}
-                    alt={proj.name}
-                    className="w-full h-full object-cover"
-                    decoding="async"
-                  />
-                </motion.div>
-              );
-            })}
-          </div>
+          {/* =======================================================
+              THE SQUISHY WATER SHADOW
+              Applied the SVG filter directly to the trailing shadow!
+              ======================================================= */}
+          <div
+            ref={trailingImageRef}
+            className="absolute inset-0 bg-[#00E5FF] geo-layer opacity-40 will-change-transform z-10"
+            style={{
+              clipPath: maskVariants.visible.clipPath,
+              transform: "scale(1.1)",
+              filter: "url(#squishy-water) blur(4px)",
+            }}
+          />
         </div>
       </div>
     </div>

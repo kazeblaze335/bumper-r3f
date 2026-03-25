@@ -78,6 +78,7 @@ const PROJECTS = [
 
 // =======================================================
 // THE WAAPI PAGE ANIMATION
+// Exactly matches FeaturedWorks for a seamless loop!
 // =======================================================
 const pageAnimation = () => {
   document.documentElement.animate(
@@ -109,43 +110,6 @@ const pageAnimation = () => {
   );
 };
 
-// =======================================================
-// LIGHTWEIGHT TV STATIC GLITCH
-// Uses a raw SVG noise data URI and pure CSS animation for 60fps performance
-// =======================================================
-const TVStaticGlitch = () => {
-  return (
-    <>
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-        @keyframes randomGlitch {
-          0%, 95% { opacity: 0; transform: translate(0, 0) scale(1); filter: contrast(1) brightness(1); }
-          96% { opacity: 0.6; transform: translate(-2%, 2%) scale(1.05); filter: contrast(1.5) brightness(1.2); }
-          97% { opacity: 0.4; transform: translate(2%, -2%) scale(1.02); filter: contrast(1.2) brightness(0.8); }
-          98% { opacity: 0.8; transform: translate(-1%, -1%) scale(1.04); filter: contrast(1.8) brightness(1.5); }
-          99%, 100% { opacity: 0; transform: translate(0, 0) scale(1); filter: contrast(1) brightness(1); }
-        }
-        .static-noise-layer {
-          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-          animation: randomGlitch 4s infinite linear;
-          mix-blend-mode: overlay;
-        }
-      `,
-        }}
-      />
-      <div className="absolute inset-0 z-20 pointer-events-none static-noise-layer opacity-0" />
-      {/* Permanent subtle grain overlay to tie it together */}
-      <div
-        className="absolute inset-0 z-10 pointer-events-none opacity-20 mix-blend-overlay"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
-        }}
-      />
-    </>
-  );
-};
-
 export default function HeroProjects() {
   const [openSlug, setOpenSlug] = useState<string | null>(null);
 
@@ -155,6 +119,7 @@ export default function HeroProjects() {
 
   return (
     <div className="relative w-full flex flex-col transition-colors duration-500">
+      {/* Table Headers */}
       <div className="border-b border-zinc-200 dark:border-zinc-800 pb-2 mb-2 flex justify-between items-end uppercase text-xs font-bold tracking-[0.2em] text-zinc-400 dark:text-zinc-500 transition-colors duration-500">
         <div className="w-[45%]">Project Name</div>
         <div className="w-[30%] hidden md:block">Services</div>
@@ -201,6 +166,7 @@ function ProjectRow({
       className="relative w-full cursor-pointer group border-b border-zinc-200 dark:border-zinc-800 transition-colors duration-500"
       onClick={onToggle}
     >
+      {/* Collased Row State */}
       <div className="relative z-10 flex justify-between items-center py-6">
         <div className="w-full md:w-[45%]">
           <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 group-hover:text-zinc-500 dark:group-hover:text-zinc-400 transition-colors duration-300">
@@ -215,6 +181,7 @@ function ProjectRow({
         </div>
       </div>
 
+      {/* Expanded State (The Visual Update) */}
       <AnimatePresence initial={false}>
         {isOpen && (
           <motion.div
@@ -224,54 +191,84 @@ function ProjectRow({
             transition={{ duration: 0.5, ease: [0.25, 1, 0.5, 1] }}
             className="overflow-hidden"
           >
-            <div className="pb-12 pt-4 flex flex-col md:flex-row gap-8 items-stretch">
-              {/* 16:9 IMAGE CONTAINER WITH TV STATIC */}
-              <div
-                className="relative w-full md:w-[45%] aspect-video rounded-lg overflow-hidden bg-zinc-900 transition-colors duration-500 cursor-pointer group/glitch"
-                onClick={handleNavigation(`/work/${project.slug}`)}
-              >
-                <Image
-                  src={project.src}
-                  alt={project.name}
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover/glitch:scale-105 filter grayscale hover:grayscale-0"
-                  decoding="async"
-                />
-                <TVStaticGlitch />
-              </div>
+            {/* Swapped layout: Text list on Left, big image on Right */}
+            <div className="pb-12 pt-4 flex flex-col md:flex-row gap-12 items-stretch">
+              {/* LEFT COLUMN: The Metadata List (Inspired by Screenshot) */}
+              <div className="w-full md:w-[35%] flex flex-col justify-between py-6">
+                <div className="flex flex-col gap-8">
+                  <p className="text-lg leading-relaxed text-zinc-700 dark:text-zinc-300 font-medium max-w-sm transition-colors duration-500">
+                    {project.details}
+                  </p>
 
-              {/* TEXT CONTENT */}
-              <div className="w-full md:w-[55%] flex flex-col justify-between md:pl-8 md:border-l border-zinc-200 dark:border-zinc-800 transition-colors duration-500">
-                <div className="flex gap-16 mb-8 md:mb-0">
-                  <div>
-                    <div className="text-xs font-bold tracking-[0.2em] uppercase text-zinc-400 mb-2">
-                      Role
+                  {/* Detailed metadata list */}
+                  <div className="flex flex-col gap-4 text-sm font-medium">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs uppercase tracking-[0.2em] text-zinc-400">
+                        Role
+                      </span>{" "}
+                      <span className="text-zinc-900 dark:text-zinc-100 transition-colors duration-500">
+                        {project.role}
+                      </span>
                     </div>
-                    <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                      {project.role}
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs uppercase tracking-[0.2em] text-zinc-400">
+                        Services
+                      </span>{" "}
+                      <span className="text-zinc-900 dark:text-zinc-100 transition-colors duration-500">
+                        {project.services}
+                      </span>
                     </div>
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold tracking-[0.2em] uppercase text-zinc-400 mb-2">
-                      Year
-                    </div>
-                    <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                      {project.year}
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs uppercase tracking-[0.2em] text-zinc-400">
+                        Year
+                      </span>{" "}
+                      <span className="text-zinc-900 dark:text-zinc-100 transition-colors duration-500">
+                        {project.year}
+                      </span>
                     </div>
                   </div>
                 </div>
 
-                <div>
-                  <p className="text-lg md:text-2xl leading-relaxed text-zinc-900 dark:text-zinc-300 font-medium max-w-xl mb-8">
-                    {project.details}
-                  </p>
+                {/* Case Study Link (Alternative backup) */}
+                <div className="mt-12">
                   <Link
                     href={`/work/${project.slug}`}
-                    className="inline-block border-b border-zinc-900 dark:border-zinc-100 pb-1 text-xs font-bold tracking-[0.2em] uppercase text-zinc-900 dark:text-zinc-100 hover:opacity-50 transition-opacity"
+                    className="inline-block border-b border-zinc-900 dark:border-zinc-100 pb-1 text-xs font-bold tracking-[0.2em] uppercase text-zinc-900 dark:text-zinc-100 hover:opacity-50 transition-opacity transition-colors duration-500"
                     onClick={handleNavigation(`/work/${project.slug}`)}
                   >
                     View Case Study
                   </Link>
+                </div>
+              </div>
+
+              {/* RIGHT COLUMN: The Large Portrait Image (Inspired by Screenshot) */}
+              <div
+                // Removed 16:9 aspect-video. Applied portrait aspect-square or aspect-[2/3].
+                className="relative w-full md:w-[65%] aspect-[2/3] md:aspect-[3/4] flex-grow rounded-lg overflow-hidden cursor-pointer group/case bg-zinc-900 shadow-2xl transition-colors duration-500"
+                onClick={handleNavigation(`/work/${project.slug}`)}
+              >
+                {/* Keep Grayscale -> Color hover logic */}
+                <Image
+                  src={project.src}
+                  alt={project.name}
+                  fill
+                  className="object-cover transition-all duration-700 group-hover/case:scale-105 filter grayscale group-hover/case:grayscale-0"
+                  decoding="async"
+                />
+
+                {/* OVERLAY ELEMENTS BASED ON SCREENSHOT */}
+
+                {/* 1. Gradient Overlay (for text readability) */}
+                <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/70 to-transparent pointer-events-none z-10" />
+
+                {/* 2. Text Overlay (Bottom Left) */}
+                <div className="absolute bottom-8 left-8 flex flex-col gap-1 text-white z-20 pointer-events-none">
+                  <span className="text-3xl md:text-4xl font-bold uppercase tracking-tight leading-none mb-1">
+                    {project.name}
+                  </span>
+                  <span className="text-xs font-bold uppercase tracking-[0.2em] opacity-80">
+                    {project.location}
+                  </span>
                 </div>
               </div>
             </div>
