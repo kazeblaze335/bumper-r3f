@@ -16,15 +16,15 @@ export default function Footer() {
       {/* ADDED: dark:text-zinc-400 */}
       <div className="w-full px-8 md:px-16 flex justify-between items-start text-xs font-bold tracking-[0.2em] uppercase text-zinc-500 dark:text-zinc-400 transition-colors duration-500">
         <div className="flex flex-col gap-2">
-          <p>NØRD OBJECTS</p>
+          <p>unitPLUS</p>
           <p>Creative Studio</p>
         </div>
         <div className="flex flex-col gap-2 text-right">
           <Link
-            href="mailto:hello@nordobjects.com"
+            href="mailto:hello@unitplus.com"
             className="hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
           >
-            hello@nordobjects.com
+            hello@unitplus.com
           </Link>
           <p>San Francisco, CA</p>
         </div>

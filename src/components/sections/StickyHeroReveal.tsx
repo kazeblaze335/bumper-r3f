@@ -8,29 +8,25 @@ import ClunkyReveal from "@/components/motion/ClunkyReveal";
 
 interface StickyHeroRevealProps {
   title?: string;
-  subtitle?: string; // The new subtitle prop
+  subtitle?: string;
   showTrademark?: boolean;
 }
 
 export default function StickyHeroReveal({
   title = "SOJU",
-  subtitle = "Scroll to discover", // Default fallback
+  subtitle = "Scroll to discover",
   showTrademark = true,
 }: StickyHeroRevealProps) {
-  // 1. The variables that were throwing errors are safely defined here:
   const pathname = usePathname();
   const [isReady, setIsReady] = useState(false);
 
-  // 2. Read the global scroll progress from Zustand
   const scrollProgress = useStore((state) => state.scrollProgress);
   const motionScroll = useMotionValue(scrollProgress);
 
-  // 3. Sync the Zustand state to the Framer Motion value
   useEffect(() => {
     motionScroll.set(scrollProgress);
   }, [scrollProgress, motionScroll]);
 
-  // 4. Handle the mount timing
   useEffect(() => {
     setIsReady(false);
     const timer = setTimeout(() => {
@@ -39,7 +35,6 @@ export default function StickyHeroReveal({
     return () => clearTimeout(timer);
   }, [pathname]);
 
-  // 5. The physics variables
   const sojuOpacity = useTransform(motionScroll, [0, 0.5], [1, 0]);
   const sojuScale = useTransform(motionScroll, [0, 1], [1, 0.85]);
   const sojuY = useTransform(motionScroll, [0, 1], ["0%", "20%"]);
@@ -52,7 +47,8 @@ export default function StickyHeroReveal({
           opacity: isReady ? sojuOpacity : 1,
           y: sojuY,
         }}
-        className={`flex items-start text-[22vw] leading-[0.75] tracking-tighter uppercase text-zinc-900 dark:text-zinc-100 font-neue`}
+        // Restored the massive 22vw size and kept the whitespace-nowrap lock
+        className={`flex flex-row items-start justify-center text-[22vw] leading-[0.75] tracking-tighter uppercase text-zinc-900 dark:text-zinc-100 font-neue whitespace-nowrap`}
       >
         <ClunkyReveal key={`text-${pathname}`} text={title} delay={0.2} />
 
@@ -64,17 +60,18 @@ export default function StickyHeroReveal({
             transition={{
               delay: 1.0,
               type: "spring",
-              stiffness: 150,
+              stiffness: 200,
               damping: 12,
             }}
-            className="text-[8vw] align-top relative top-4 ml-2 inline-block transform-style-3d"
+            style={{ transformStyle: "preserve-3d" }}
+            // Restored the 8vw size for the trademark symbol
+            className="text-[8vw] align-top relative top-2 md:top-4 ml-2 inline-block"
           >
             ®
           </motion.span>
         )}
       </motion.div>
 
-      {/* The subtitle element properly using the prop */}
       <motion.p
         key={`${pathname}-subtitle`}
         initial={{ opacity: 0, y: 20 }}

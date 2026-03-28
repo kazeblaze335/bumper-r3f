@@ -1,47 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useTransitionRouter } from "next-view-transitions";
-
-// The exact WAAPI animation from the reference repo!
-const pageAnimation = () => {
-  // 1. The old page scales up slightly, rotates, and fades out (Push Back)
-  document.documentElement.animate(
-    [
-      { scale: 1, transform: "translateY(0%)", rotate: "0deg", opacity: 1 },
-      {
-        scale: 1.2,
-        transform: "translateY(-10%)",
-        rotate: "-5deg",
-        opacity: 0,
-      },
-    ],
-    {
-      duration: 1200,
-      easing: "cubic-bezier(0.9, 0, 0.1, 1)",
-      fill: "forwards",
-      pseudoElement: "::view-transition-old(root)",
-    },
-  );
-
-  // 2. The new page slides up from the bottom over the old page
-  document.documentElement.animate(
-    [{ transform: "translateY(100%)" }, { transform: "translateY(0%)" }],
-    {
-      duration: 1200,
-      easing: "cubic-bezier(0.9, 0, 0.1, 1)",
-      fill: "forwards",
-      pseudoElement: "::view-transition-new(root)",
-    },
-  );
-};
+import MagneticWrapper from "@/components/motion/MagneticWrapper";
+import StairsMenu from "./StairsMenu";
 
 export default function Navbar() {
   const [isNightMode, setIsNightMode] = useState(false);
-  const router = useTransitionRouter();
-  const pathname = usePathname();
+  const [menuIsOpen, setMenuIsOpen] = useState(false);
 
   useEffect(() => {
     if (document.documentElement.classList.contains("dark")) {
@@ -59,59 +24,49 @@ export default function Navbar() {
     }
   };
 
-  // Custom navigation handler to trigger the transition
-  const handleNavigation =
-    (path: string) => (e: React.MouseEvent<HTMLAnchorElement>) => {
-      e.preventDefault();
-      if (pathname === path) return;
-
-      router.push(path, {
-        onTransitionReady: pageAnimation,
-      });
-    };
-
   return (
-    <nav className="fixed top-0 left-0 w-full z-50 px-8 py-6 flex justify-between items-center mix-blend-difference text-zinc-100">
-      <Link
-        href="/"
-        onClick={handleNavigation("/")}
-        className="text-xs font-bold tracking-[0.2em] uppercase hover:opacity-50 transition-opacity"
-      >
-        NØRD OBJECTS
-      </Link>
+    <>
+      <nav className="fixed top-0 left-0 w-full z-[90] px-6 md:px-8 py-6 flex justify-between items-start mix-blend-difference text-zinc-100 pointer-events-none">
+        {/* THE EASTER EGG LOGO */}
+        <div className="pointer-events-auto mt-2">
+          <MagneticWrapper strength={0.1}>
+            <div
+              onClick={toggleTheme}
+              // Added select-none so rapid clicking doesn't highlight the text
+              className="text-xs font-bold tracking-[0.2em] uppercase hover:opacity-50 transition-opacity cursor-pointer p-4 -m-4 block select-none"
+            >
+              SOJU
+            </div>
+          </MagneticWrapper>
+        </div>
 
-      <div className="flex items-center gap-8 text-xs font-bold tracking-[0.2em] uppercase">
-        <Link
-          href="/"
-          onClick={handleNavigation("/")}
-          className="hover:opacity-50 transition-opacity hidden md:block"
-        >
-          Home
-        </Link>
+        <div className="flex items-start gap-6 md:gap-8 text-xs font-bold tracking-[0.2em] uppercase pointer-events-auto">
+          {/* THE NEON SQUARE BURGER BUTTON */}
+          <MagneticWrapper strength={0.2}>
+            <div
+              onClick={() => setMenuIsOpen(true)}
+              className="flex flex-col items-center justify-center w-20 h-20 md:w-24 md:h-24 bg-[#E4FF00] text-zinc-900 cursor-pointer group mix-blend-normal shadow-2xl transition-transform duration-500 hover:scale-105"
+            >
+              <span className="mb-2 hover:opacity-50 transition-opacity leading-none">
+                Menu
+              </span>
+              <svg
+                width="32"
+                height="8"
+                viewBox="0 0 56 7"
+                fill="none"
+                className="transform transition-transform group-hover:scale-x-110 origin-center"
+              >
+                <line x1="56" y1="0.5" x2="0" y2="0.5" stroke="currentColor" />
+                <line x1="56" y1="6.5" x2="28" y2="6.5" stroke="currentColor" />
+              </svg>
+            </div>
+          </MagneticWrapper>
+        </div>
+      </nav>
 
-        <Link
-          href="/work"
-          onClick={handleNavigation("/work")}
-          className="hover:opacity-50 transition-opacity hidden md:block"
-        >
-          Projects
-        </Link>
-
-        <Link
-          href="/about"
-          onClick={handleNavigation("/about")}
-          className="hover:opacity-50 transition-opacity hidden md:block"
-        >
-          About Us
-        </Link>
-
-        <button
-          onClick={toggleTheme}
-          className="ml-4 md:ml-8 border border-zinc-100 px-4 py-1.5 rounded-full hover:bg-zinc-100 hover:text-zinc-900 transition-colors duration-300 w-[130px] flex justify-center items-center"
-        >
-          {isNightMode ? "Day Mode" : "Night Mode"}
-        </button>
-      </div>
-    </nav>
+      {/* Mount the Overlay Menu */}
+      <StairsMenu isOpen={menuIsOpen} closeMenu={() => setMenuIsOpen(false)} />
+    </>
   );
 }

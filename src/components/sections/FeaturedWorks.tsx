@@ -2,8 +2,8 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion, useSpring, useMotionValue } from "framer-motion";
-import Link from "next/link";
 import { useTransitionRouter } from "next-view-transitions";
+import { triggerPaperPushTransition } from "@/utils/animations"; // <-- Import
 
 const FEATURED = [
   {
@@ -199,7 +199,7 @@ export default function FeaturedWorks() {
     (path: string) => (e: React.MouseEvent<HTMLAnchorElement>) => {
       e.preventDefault();
       router.push(path, {
-        onTransitionReady: pageAnimation,
+        onTransitionReady: () => triggerPaperPushTransition(),
       });
     };
 
@@ -213,7 +213,7 @@ export default function FeaturedWorks() {
     >
       <div className="flex flex-col w-full relative z-10 max-w-7xl mx-auto">
         {FEATURED.map((project, index) => (
-          <Link
+          <a
             key={project.slug}
             href={`/work/${project.slug}`}
             onClick={handleNavigation(`/work/${project.slug}`)}
@@ -272,7 +272,7 @@ export default function FeaturedWorks() {
                 {project.tag}
               </MaskText>
             </motion.div>
-          </Link>
+          </a>
         ))}
       </div>
 
