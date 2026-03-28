@@ -1,6 +1,5 @@
 "use client";
 
-import OptimizedVideo from "./OptimizedVideo";
 import { motion } from "framer-motion";
 import localFont from "next/font/local";
 import InteractiveVideoBlock from "../ui/InteractiveVideoBlock";
