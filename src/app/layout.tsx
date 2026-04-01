@@ -1,17 +1,11 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
 import "./globals.css";
-import { ViewTransitions } from "next-view-transitions";
-
 import SmoothScrollProvider from "@/providers/SmoothScrollProvider";
-import Preloader from "@/components/ui/Preloader";
-import GlobalCanvas from "@/components/webgl/GlobalCanvas";
+import { ViewTransitions } from "next-view-transitions";
+import localFont from "next/font/local";
 
-const circularStd = localFont({
-  src: "../../public/fonts/CircularStd-Medium.woff",
-  variable: "--font-circular",
-  display: "swap",
-});
+// THE FIX: Restored the Preloader import!
+import Preloader from "@/components/ui/Preloader";
 
 const neueMontreal = localFont({
   src: "../../public/fonts/PPNeueMontreal-Bold.otf",
@@ -19,32 +13,25 @@ const neueMontreal = localFont({
   display: "swap",
 });
 
-const nbInternational = localFont({
-  src: "../../public/fonts/NBInternational-Regular.woff2",
-  variable: "--font-nb",
-  display: "swap",
-});
-
 export const metadata: Metadata = {
-  title: "Creative Development Folio",
+  title: "SOJU Studio",
   description:
-    "Awwwards-winning interactive portfolio featuring WebGL, Framer Motion, and Next.js",
+    "Digital creative studio blurring the line between technology and art.",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <ViewTransitions>
-      <html lang="en" className="bg-zinc-950 text-zinc-100">
+      <html lang="en" className="dark">
         <body
-          className={`${circularStd.variable} ${neueMontreal.variable} ${nbInternational.variable} font-sans antialiased bg-zinc-100 dark:bg-zinc-950 transition-colors duration-500`}
+          className={`bg-zinc-950 text-zinc-100 antialiased selection:bg-[#CCFF00] selection:text-zinc-950 ${neueMontreal.variable}`}
         >
-          {/* THE FIX: Fixed elements must live OUTSIDE the smooth scroll transform! */}
+          {/* THE FIX: Re-injected the Preloader into the very top of the DOM */}
           <Preloader />
-          <GlobalCanvas />
 
           <SmoothScrollProvider>{children}</SmoothScrollProvider>
         </body>

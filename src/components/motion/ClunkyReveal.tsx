@@ -44,20 +44,19 @@ export default function ClunkyReveal({ text, delay = 0 }: ClunkyRevealProps) {
       variants={containerVariants}
       initial="hidden"
       animate={isLoading ? "hidden" : "visible"}
-      className="flex whitespace-nowrap"
+      className="flex whitespace-nowrap tracking-tighter uppercase font-neue font-bold"
     >
       {words.map((word, wordIndex) => (
         <span key={wordIndex} className="flex mr-[0.25em] last:mr-0">
           {word.split("").map((char, charIndex) => (
             <span
               key={charIndex}
-              // FIX: Added -mr-[0.08em] to the wrapper!
-              // This pulls the next letter backwards to perfectly negate the internal padding.
-              className="inline-block overflow-hidden pt-8 pb-12 px-4 -mt-8 -mb-12 -mx-4 -mr-[0.08em]"
+              // THE FIX: Increased pt-8/-mt-8 to pt-32/-mt-32.
+              // This gives the spring animation 128px of invisible headroom to bounce into!
+              className="inline-block overflow-hidden pt-32 pb-12 px-4 -mt-32 -mb-12 -mx-4 -mr-[0.08em]"
             >
               <motion.span
                 variants={characterVariants}
-                // The padding that saves the "R" from clipping
                 className="inline-block pr-[0.08em] origin-bottom-left"
               >
                 {char}

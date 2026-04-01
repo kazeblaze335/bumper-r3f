@@ -4,6 +4,13 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useStore } from "@/store/useStore";
 import { useProgress } from "@react-three/drei";
+import localFont from "next/font/local";
+
+// 1. THE FIX: Import the monumental studio font
+const neueMontreal = localFont({
+  src: "../../../public/fonts/PPNeueMontreal-Bold.otf",
+  variable: "--font-neue",
+});
 
 export default function Preloader() {
   const { isLoading, setIsLoading } = useStore();
@@ -56,8 +63,8 @@ export default function Preloader() {
         <motion.span
           animate={{ y: isLoading ? "0%" : "-120%" }}
           transition={{ duration: 0.5, ease: [0.76, 0, 0.24, 1] }}
-          // THE FIX: Exact matching classes to the ClunkyReveal ARCHIVE text
-          className="block text-[22vw] leading-[0.75] tracking-tighter uppercase font-neue font-black pr-[0.05em]"
+          // 2. THE FIX: Injected the custom font class into the massive percentage text
+          className={`block text-[22vw] leading-[0.75] tracking-tighter uppercase font-black pr-[0.05em] ${neueMontreal.className}`}
         >
           {displayProgress}%
         </motion.span>
@@ -69,7 +76,8 @@ export default function Preloader() {
           transition={{ duration: 0.5, ease: [0.76, 0, 0.24, 1], delay: 0.05 }}
           className="text-xs font-bold tracking-[0.4em] uppercase text-zinc-500"
         >
-          unitPLUS Initializing
+          {/* 3. THE FIX: Updated the old branding to match the new SOJU identity */}
+          SOJU Initializing
         </motion.p>
       </div>
     </motion.div>
