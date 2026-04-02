@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, useSpring } from "framer-motion";
 import { useTransitionRouter } from "next-view-transitions";
 import { triggerPaperPushTransition } from "@/utils/animations";
-import DistortedImage from "@/components/webgl/DistortedImage"; // <-- Import WebGL Distortion
+import SingletonGlitch from "@/components/webgl/SingletonGlitch";
 
 export interface Project {
   name: string;
@@ -24,7 +24,6 @@ export default function ProjectShowcase({ projects }: { projects: Project[] }) {
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      // Offset by 150px to perfectly center the 300x300 cursor on the mouse
       cursorX.set(e.clientX - 150);
       cursorY.set(e.clientY - 150);
     };
@@ -33,7 +32,6 @@ export default function ProjectShowcase({ projects }: { projects: Project[] }) {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, [cursorX, cursorY]);
 
-  // The click handler that runs the 3D transition before routing
   const handleProjectClick = (e: React.MouseEvent, slug: string) => {
     e.preventDefault();
     router.push(`/work/${slug}`, {
@@ -58,7 +56,6 @@ export default function ProjectShowcase({ projects }: { projects: Project[] }) {
               onMouseLeave={() => setHoveredIndex(null)}
               className="group border-b border-zinc-200 dark:border-zinc-800 relative z-10"
             >
-              {/* Anchor tag that triggers our custom 3D transition handler */}
               <a
                 href={`/work/${project.slug}`}
                 onClick={(e) => handleProjectClick(e, project.slug)}
@@ -83,7 +80,6 @@ export default function ProjectShowcase({ projects }: { projects: Project[] }) {
         </ul>
       </div>
 
-      {/* THE FLOATING WEBGL CURSOR */}
       <motion.div
         className="fixed top-0 left-0 w-[300px] h-[300px] overflow-hidden pointer-events-none z-50 rounded-md bg-zinc-900"
         style={{ x: cursorX, y: cursorY }}
@@ -96,19 +92,11 @@ export default function ProjectShowcase({ projects }: { projects: Project[] }) {
       >
         <div className="relative w-full h-full">
           {projects.map((project, index) => (
-            <div
+            <SingletonGlitch
               key={project.slug}
-              className="absolute inset-0 transition-opacity duration-500"
-              style={{
-                opacity: hoveredIndex === index ? 1 : 0,
-                zIndex: hoveredIndex === index ? 10 : 0,
-              }}
-            >
-              {/* Render the WebGL Tunnel effect! */}
-              {hoveredIndex === index && (
-                <DistortedImage src={project.src} active={true} />
-              )}
-            </div>
+              textureUrl={project.src}
+              active={hoveredIndex === index}
+            />
           ))}
         </div>
       </motion.div>

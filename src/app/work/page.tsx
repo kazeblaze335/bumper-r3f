@@ -10,7 +10,6 @@ import Footer from "@/components/ui/Footer";
 import FilmGrain from "@/components/ui/FilmGrain";
 import StickyHeroReveal from "@/components/sections/StickyHeroReveal";
 import SingletonGlitch from "@/components/webgl/SingletonGlitch";
-// 1. Import the FeaturedWorks component
 import FeaturedWorks from "@/components/sections/FeaturedWorks";
 
 const PROJECTS = [
@@ -84,8 +83,6 @@ export default function WorkGallery() {
   const [footerHeight, setFooterHeight] = useState(0);
   const footerRef = useRef<HTMLDivElement>(null);
 
-  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
-
   const router = useTransitionRouter();
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
@@ -116,12 +113,6 @@ export default function WorkGallery() {
       <main className="relative min-h-screen text-zinc-900 dark:text-zinc-100 overflow-clip">
         <Navbar />
 
-        <SingletonGlitch
-          projects={PROJECTS}
-          activeIndex={hoveredIndex}
-          itemRefs={itemRefs}
-        />
-
         <div
           className="relative z-10"
           style={{ marginBottom: `${footerHeight}px` }}
@@ -137,7 +128,6 @@ export default function WorkGallery() {
               ${isCinematicMode ? "bg-zinc-100/40 dark:bg-zinc-950/40 backdrop-blur-sm" : "bg-zinc-100 dark:bg-zinc-950"}
             `}
           >
-            {/* 2. Inject the Featured Works Section */}
             <div className="px-6 md:px-12 max-w-[1800px] mx-auto mb-32 relative z-20">
               <p className="mb-12 text-sm font-bold tracking-[0.2em] uppercase text-zinc-500 dark:text-zinc-400">
                 Featured Works
@@ -145,7 +135,6 @@ export default function WorkGallery() {
               <FeaturedWorks />
             </div>
 
-            {/* 3. The WebGL Project Archive Grid */}
             <div className="px-6 md:px-12 max-w-[1800px] mx-auto">
               <p className="mb-12 text-sm font-bold tracking-[0.2em] uppercase text-zinc-500 dark:text-zinc-400">
                 Project Archive
@@ -168,17 +157,20 @@ export default function WorkGallery() {
                         className={`w-full cursor-none transition-all duration-700 ${isOtherHovered ? "opacity-40 blur-[2px]" : "opacity-100 blur-0"}`}
                       >
                         <div
-                          ref={(el) => {
-                            itemRefs.current[index] = el;
-                          }}
                           className={`relative w-full aspect-[3/4] overflow-hidden bg-zinc-200 dark:bg-zinc-900 mb-4 transition-transform duration-700 ${isHovered ? "scale-[0.98]" : "scale-100"}`}
                         >
+                          {/* THE FIX: Stripped the grayscale logic, keeping the image beautifully in color! */}
                           <Image
                             src={project.src}
                             alt={project.name}
                             fill
                             sizes="(max-width: 768px) 50vw, 25vw"
-                            className={`object-cover transition-opacity duration-150 ${isHovered ? "opacity-0" : "opacity-100 grayscale"}`}
+                            className="object-cover transition-all duration-700"
+                          />
+
+                          <SingletonGlitch
+                            textureUrl={project.src}
+                            active={isHovered}
                           />
                         </div>
 

@@ -4,8 +4,9 @@ import SmoothScrollProvider from "@/providers/SmoothScrollProvider";
 import { ViewTransitions } from "next-view-transitions";
 import localFont from "next/font/local";
 
-// THE FIX: Restored the Preloader import!
 import Preloader from "@/components/ui/Preloader";
+// 1. THE FIX: Re-import your GlobalCanvas
+import GlobalCanvas from "@/components/webgl/GlobalCanvas";
 
 const neueMontreal = localFont({
   src: "../../public/fonts/PPNeueMontreal-Bold.otf",
@@ -30,8 +31,10 @@ export default function RootLayout({
         <body
           className={`bg-zinc-950 text-zinc-100 antialiased selection:bg-[#CCFF00] selection:text-zinc-950 ${neueMontreal.variable}`}
         >
-          {/* THE FIX: Re-injected the Preloader into the very top of the DOM */}
           <Preloader />
+
+          {/* 2. THE FIX: Put the GlobalCanvas back in the DOM so your glitch meshes have a destination! */}
+          <GlobalCanvas />
 
           <SmoothScrollProvider>{children}</SmoothScrollProvider>
         </body>
